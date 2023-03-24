@@ -1,0 +1,29 @@
+Package: fastBCR
+Type: Package
+Title: a k-mer-based approach for fast inferencing clonal families from large-scale B cell repertoire sequencing data
+Version: 1.0.0
+Author: Kaixuan Wang, Jian Zhang*
+Maintainer: Kaixuan Wang <3018241020@tju.edu.cn>
+Description: fastBCR is an automatic BCR clonal family inference method, which also incorporates multiple functional modules for downstream analyses. fastBCR is composed of three parts: Data Processing, BCR Clustering, and Downstream Analysis.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 4.2.0),
+    ggplot2,
+    statnet,
+    ggmsa,
+    msa,
+Imports:
+    dplyr,
+    Biostrings,
+    RColorBrewer,
+    stringr,
+    ggtree,
+    ape,
+    ggseqlogo,
+    ggpubr,
+    reshape2,
+    GGally,
+    magrittr
+RoxygenNote: 7.2.3
