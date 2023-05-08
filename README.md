@@ -39,8 +39,8 @@ BiocManager::install("ggmsa")
 Now you can install the development version of fastBCR like so:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("ZhangLabTJU/fastBCR")
+install.packages("devtools")
+devtools::install_github("ZhangLabTJU/R-package/tree/main/fastBCR")
 library(fastBCR)
 ```
 
@@ -66,7 +66,8 @@ in the table:
 fastBCR is an automatic BCR clonal family inference method, which also
 incorporates multiple functional modules for downstream analyses.
 fastBCR is composed of three parts: **Data Processing**, **BCR Clustering**, and
-**Downstream Analysis**.
+**Downstream Analysis**. In addition, fastBCR can be combined with annotation 
+software (_e.g._ IgBlast) for B-cell **Clonal Family Simulation**.
 
 <img src="man/figures/README-overview-1.png" width="100%" />
 
@@ -176,16 +177,59 @@ junc.len(input, "AA")
 ```
 <img src="man/figures/README-junc.len-1.png" width="50%" />
 
-#### Plot of phylogenetic tree and multiple sequences alignment (MSA)
+#### Plot of phylogenetic tree and multiple sequences alignment
 
 ``` r
 library(fastBCR)
 data(bcr_clusters)
 msa.tree(bcr_clusters, 20)
 #> use default substitution matrix
+#> Parameter setting = useAbundance:  True ; revision:  True ; trim: True
+#> done
 ```
-
 <img src="man/figures/README-msa.tree-1.png" width="80%" />
+
+#### Reconstructing B cell lineage trees with minimum spanning tree and genotype abundances (Optional)
+
+ClonalTree is a new algorithm to reconstruct BCR lineage trees that incorporates genotype abundance into a minimum spanning tree to infer maximum parsimony trees.(URL: https://github.com/julibinho/ClonalTree)
+
+##### Requirements 
+
+  * numpy :
+      ```
+      $ conda install numpy
+      ```
+      or 
+      ```
+      $ pip install numpy
+      ```
+
+  * Biopython
+      ```
+      $ pip install biopython
+      ```
+
+  * ete3 :
+      ```
+      $ pip install ete3
+      ```
+
+  * networkx (for the evaluation) :
+      ```
+      $ pip install networkx
+      ```
+
+##### Using ClonalTree      
+
+``` r
+library(fastBCR)
+data(bcr_clusters)
+Clonal.tree(bcr_clusters, 1)
+#> use default substitution matrix
+#> Parameter setting = useAbundance:  True ; revision:  True ; trim: True
+#> done
+```
+<img src="man/figures/README-Clonal.tree-1.png" width="70%" />
 
 #### Visualization of junction_aa sequences within a cluster
 
@@ -261,3 +305,25 @@ CSR.cluster(bcr_clusters, 1)
 ```
 
 <img src="man/figures/README-CSR.cluster-1.png" width="50%" />
+
+### Clonal Family Simulation
+
+fastBCR can simulate the generation of B cell clonal families to evaluate the 
+performance of different clonal family inference methods. Specifically, it 
+begins by generating an ancestor cell through V(D)J random recombinant and 
+simulated the process of antigen activation that led to multiple rounds of 
+expansion, mutation in the junction region and elimination, ultimately 
+resulting in the formation of a B cell clonal family. This process needs to be 
+combined with sequence annotation software, and here we recommend using IgBlast.
+(URL: https://changeo.readthedocs.io/en/stable/examples/igblast.html)
+
+<img src="man/figures/README-Simulation-1.png" width="100%" />
+
+``` r
+library(fastBCR)
+germline2fas(100, filename = "Simulation/Germline.fasta")
+# Annotation
+germline_data = read.table('Simulation/Germline_igblast_db-pass_parse-select.tsv', header = T, sep = "\t")
+CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = 'Simulation/10_0.001.fasta')
+# Annotation
+```

@@ -15,6 +15,6 @@ A real experimental BCR sequencing repertoire with AIRR format.
 }
 \examples{
 data("test_data")
-input = data.pro(test_data)
+input <- data.pro(test_data)
 }
 \keyword{datasets}

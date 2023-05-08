@@ -44,6 +44,7 @@ data.pro <- function(raw_data) {
   junction_aa <- pro_data$junction_aa
   vjcdr3 <- paste(v_call, j_call, junction_aa)
   pro_data <- pro_data[!duplicated(vjcdr3), ]
-
+  seq_ids <- pro_data$sequence_id
+  pro_data <- pro_data[!duplicated(seq_ids), ]
   return(pro_data)
 }

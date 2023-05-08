@@ -4,7 +4,7 @@
 #'
 #' @examples
 #' data("test_data")
-#' input = data.pro(test_data)
+#' input <- data.pro(test_data)
 "test_data"
 
 #' Data: As a sample dataset for BCR_clustering.
@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' data("input")
-#' bcr_clusters = BCR.cluster(input)
+#' bcr_clusters <- BCR.cluster(input)
 "input"
 
 #' Data: As a sample dataset for Evolutionary_Analysis.

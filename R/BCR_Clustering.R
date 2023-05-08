@@ -1,6 +1,6 @@
 Sort_clu <- function(clu) {
   len.lis <- sapply(clu, function(x) length((x$sequence_id)))
-  index <- order(len.lis, decreasing = T)
+  index <- order(len.lis, decreasing = TRUE)
   sort <- vector("list", length = length(index))
   sort[c(seq_along(index))] <- clu[index]
   return(sort)
@@ -53,15 +53,15 @@ similar_con <- function(bcr_clusters) {
     }
     gap.loc <- which(most_AA == "-")
     if (length(gap.loc) == 0) {
-      con <- sapply(each_AA, function(x) as.numeric(sort(table(x), decreasing = T))[1] / num)
+      con <- sapply(each_AA, function(x) as.numeric(sort(table(x), decreasing = TRUE))[1] / num)
     } else {
       con <- c()
       for (k in seq_along(each_AA)) {
         if (any(gap.loc == k)) {
-          tmp.con <- as.numeric(sort(table(each_AA[[k]]), decreasing = T))[2] / num
+          tmp.con <- as.numeric(sort(table(each_AA[[k]]), decreasing = TRUE))[2] / num
           con <- c(con, tmp.con)
         } else {
-          tmp.con <- as.numeric(sort(table(each_AA[[k]]), decreasing = T))[1] / num
+          tmp.con <- as.numeric(sort(table(each_AA[[k]]), decreasing = TRUE))[1] / num
           con <- c(con, tmp.con)
         }
       }
@@ -77,7 +77,6 @@ BuildBCRlineage <- function(input, cluster_thre) {
   len_aa <- nchar(junction_aa)
   half <- ceiling(len_aa / 2)
 
-  # 5-mer*6
   start1 <- 3
   end1 <- 7
   start2 <- 4
@@ -117,7 +116,7 @@ BuildBCRlineage <- function(input, cluster_thre) {
   k_mer.lis <- c(k_mer1, k_mer2, k_mer3, k_mer4, k_mer5, k_mer6)
   id <- rep(input$sequence_id, times = 6)
 
-  k_mer.fre <- sort(table(k_mer.lis), decreasing = T)
+  k_mer.fre <- sort(table(k_mer.lis), decreasing = TRUE)
   kk <- which(as.numeric(k_mer.fre) >= cluster_thre)
   k_mer.clu <- names(k_mer.fre)[kk]
   empty.kmer <- which(k_mer.clu == "")
@@ -165,7 +164,7 @@ BuildBCRlineage <- function(input, cluster_thre) {
 #' @param input AIRR format data after Data_Processing
 #' @param similarity_thre The similarity threshold for merging two clusters whose selectable range is (0,1]. Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.
 #' @param cluster_thre Minimal clustering criteria. Defaluts to (3 + floor(nrow(input)/100000).
-#' @param compactness_thre The compactness threshold for filtering clusters. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.
+#' @param consensus_thre The consensus threshold for filtering clusters. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.
 #'
 #' @return Clonal families inferred by fastBCR
 #' @export
@@ -175,7 +174,7 @@ BuildBCRlineage <- function(input, cluster_thre) {
 #' bcr_clusters <- BCR.cluster(input)
 BCR.cluster <- function(input, similarity_thre = 0.1,
                         cluster_thre = 3 + floor(nrow(input) / 100000),
-                        compactness_thre = 0.8) {
+                        consensus_thre = 0.8) {
   # k-mer pre-clustering
   pre_clusters <- BuildBCRlineage(input, cluster_thre)
   pre.n <- length(pre_clusters)
@@ -283,7 +282,7 @@ BCR.cluster <- function(input, similarity_thre = 0.1,
     index = seq_along(clu.ids),
     ids = I(clu.ids)
   )
-  df <- dplyr::distinct(df, ids, .keep_all = T)
+  df <- dplyr::distinct(df, ids, .keep_all = TRUE)
   clu.index <- df$index
   sort_clusters <- sort_clusters[clu.index]
 
@@ -300,7 +299,7 @@ BCR.cluster <- function(input, similarity_thre = 0.1,
   clu.index <- c(1:cc)
   bcr_clusters <- vector(mode = "list", length = cc)
   dd <- 1
-  while (T) {
+  while (TRUE) {
     # Candidate
     clu1.id <- clu_info[[dd]]$Id
     clu1.len <- clu_info[[dd]]$len
@@ -367,7 +366,7 @@ BCR.cluster <- function(input, similarity_thre = 0.1,
   bcr_clusters <- bcr_clusters[-which(lapply(bcr_clusters, function(x) length(x$sequence_id)) == 0)]
   bcr_clusters <- Sort_clu(bcr_clusters)
   con <- similar_con(bcr_clusters)
-  filt.loc <- which(con < compactness_thre)
+  filt.loc <- which(con < consensus_thre)
   if (length(filt.loc) != 0) {
     bcr_clusters <- bcr_clusters[-filt.loc]
   }

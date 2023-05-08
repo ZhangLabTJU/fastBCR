@@ -2,8 +2,10 @@
 
 export("%>%")
 export(BCR.cluster)
+export(CF2fas)
 export(CSR.cluster)
 export(CSR.sample)
+export(Clonal.tree)
 export(SHM.cluster)
 export(SHM.iso)
 export(SHM.sample)

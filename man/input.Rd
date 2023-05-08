@@ -15,6 +15,6 @@ Processed data after Data_Processing (using 'data.pro(test_data)').
 }
 \examples{
 data("input")
-bcr_clusters = BCR.cluster(input)
+bcr_clusters <- BCR.cluster(input)
 }
 \keyword{datasets}

@@ -197,6 +197,66 @@ msa.tree <- function(bcr_clusters, n) {
     ggtree::xlim_tree(0.1)
 }
 
+#' Function: Reconstructing B cell lineage trees with minimum spanning tree and genotype abundances (ClonalTree)
+#'
+#' @param  bcr_clusters clonal families inferred by fastBCR
+#' @param n select a cluster to plot the evolutionary tree
+#'
+#' @return the reconstructed BCR lineage tree
+#' @export
+#'
+#' @examples
+#' data("bcr_clusters")
+#' Clonal.tree(bcr_clusters, 1)
+Clonal.tree <- function(bcr_clusters, n) {
+  ids <- bcr_clusters[[n]]$sequence_id
+  l <- nchar(ids)
+  if (min(l) > 5) {
+    ids <- stringr::str_sub(ids, l - 4, l)
+  }
+  seqs <- bcr_clusters[[n]]$junction
+  MSAalign_dna <- msa(Biostrings::DNAStringSet(seqs), "ClustalW")
+  seqs_dna <- as.character(attributes(MSAalign_dna)$unmasked)
+  splt <- strsplit(seqs_dna, "")
+  DNA_len <- length(splt[[1]])
+  most_DNA <- c()
+  for (j in 1:DNA_len) {
+    DNA_lis <- sapply(splt, function(x) x[j])
+    tmp.DNA <- names(sort(table(DNA_lis), decreasing = TRUE))[1]
+    if (tmp.DNA == "-") {
+      tmp.DNA <- names(sort(table(DNA_lis), decreasing = TRUE))[2]
+    }
+    most_DNA <- c(most_DNA, tmp.DNA)
+  }
+  consensus_DNA <- paste(most_DNA, collapse = "")
+  con.loc <- which(consensus_DNA %in% seqs)
+
+  if (length(con.loc) == 0) {
+    ids <- c("naive", ids)
+    seqs <- c(consensus_DNA, seqs)
+  } else {
+    ids[con.loc] <- "naive"
+  }
+
+  fasta <- paste0(">", ids, "\n", seqs)
+  write.table(fasta,
+    file = "ClonalTree/Examples/input/CF.fasta",
+    row.names = F,
+    col.names = F,
+    quote = F
+  )
+  system("python3 ClonalTree/src/clonalTree.py  -i ClonalTree/Examples/input/CF.fasta -o ClonalTree/Examples/output/CF.abRT.nk -a 1 -r 1 -t 1")
+  tree <- read.tree("ClonalTree/Examples/output/CF.abRT.nk")
+  ggtree(tree, size = 1, col = "deepskyblue3", options(ignore.negative.edge = TRUE)) +
+    # ggtitle(title)+
+    geom_nodelab(size = 4, color = "purple4", hjust = 1.2, vjust = -0.3) +
+    geom_nodepoint(size = 3, color = "orange2") +
+    geom_tiplab(size = 4, color = "purple3", hjust = -0.3) +
+    geom_tippoint(size = 2, color = "deepskyblue3") +
+    theme_tree2() +
+    theme(axis.text = element_text(face = "bold", size = 10, colour = "black"))
+}
+
 #' Function: Visualization of junction_aa sequences within a cluster
 #'
 #' Perform MSA on the junction amino acid of all sequences in the clonal family for visualization.
@@ -222,7 +282,7 @@ msa.logo <- function(bcr_clusters, n) {
   len <- unique(nchar(seqs_aa))
   vjlen <- paste(paste(v_call, collapse = ","), "_", paste(j_call, collapse = ","), "_Length:", len, sep = "")
   clu.title <- vjlen
-  ggmsa(SEQs_aa, char_width = 0.6, seq_name = T) +
+  ggmsa(SEQs_aa, char_width = 0.6, seq_name = TRUE) +
     ggtitle(label = clu.title) +
     theme(
       plot.title = element_text(lineheight = .8, size = 16, face = "bold", hjust = 0),
@@ -356,7 +416,7 @@ SHM.sample <- function(df) {
     ggpubr::stat_compare_means(
       comparisons = my_comparisons,
       label = "p.signif",
-      hide.ns = T,
+      hide.ns = TRUE,
       step.increase = 0.1
     )
 }
@@ -477,7 +537,7 @@ CSR.sample <- function(bcr_clusters) {
   network.edge <- reshape2::melt(network.matrix)
   network.edge <- network.edge[-which(network.edge$value == 0), ]
 
-  network.data <- network(network.matrix, directed = T, matrix.type = "adjacency")
+  network.data <- network(network.matrix, directed = TRUE, matrix.type = "adjacency")
   network.data %v% "Isotype" <- c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2")
   set.edge.attribute(network.data, attrname = "as", value = network.edge[, "value"] * 15 / bcr_clusters.count)
   node.attr <- round(rowSums(network.matrix) / sum(network.matrix), 4)
@@ -542,7 +602,7 @@ CSR.cluster <- function(bcr_clusters, n) {
   }
   network.edge <- reshape2::melt(network.matrix)
   network.edge <- network.edge[-which(network.edge$value == 0), ]
-  network.data <- network(network.matrix, directed = T, matrix.type = "adjacency")
+  network.data <- network(network.matrix, directed = TRUE, matrix.type = "adjacency")
   network.data %v% "Isotype" <- c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2")
   set.edge.attribute(network.data, attrname = "as", value = network.edge[, "value"] * 15 / bcr_clusters.count)
   node.attr <- round(rowSums(network.matrix) / sum(network.matrix), 4)
@@ -553,13 +613,16 @@ CSR.cluster <- function(bcr_clusters, n) {
     mode = "circle", color = "Isotype",
     palette = c("IGHM" = cbbPalette2[1], "IGHD" = cbbPalette2[2], "IGHG3" = cbbPalette2[3], "IGHG1" = cbbPalette2[4], "IGHA1" = cbbPalette2[5], "IGHG2" = cbbPalette2[6], "IGHG4" = cbbPalette2[7], "IGHE" = cbbPalette2[8], "IGHA2" = cbbPalette2[9]),
     size = "Isotype", size.palette = c("IGHM" = node.value[1], "IGHD" = node.value[2], "IGHG3" = node.value[3], "IGHG1" = node.value[4], "IGHA1" = node.value[5], "IGHG2" = node.value[6], "IGHG4" = node.value[7], "IGHE" = node.value[8], "IGHA2" = node.value[9]),
-    edge.size = "as", edge.color = "grey80") +
+    edge.size = "as", edge.color = "grey80"
+  ) +
     labs(x = "", y = "", color = "Isotype") +
     coord_cartesian(clip = "off") +
     theme_bw() +
-    theme(plot.title = element_text(lineheight = .8, size = 20, face = "bold", hjust = 0.5),
-          legend.position = "right",
-          legend.title = element_text(face = "bold", size = 18),
-          legend.text = element_text(face = "bold", size = 16)) +
+    theme(
+      plot.title = element_text(lineheight = .8, size = 20, face = "bold", hjust = 0.5),
+      legend.position = "right",
+      legend.title = element_text(face = "bold", size = 18),
+      legend.text = element_text(face = "bold", size = 16)
+    ) +
     guides(size = "none")
 }

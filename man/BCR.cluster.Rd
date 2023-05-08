@@ -8,7 +8,7 @@ BCR.cluster(
   input,
   similarity_thre = 0.1,
   cluster_thre = 3 + floor(nrow(input)/1e+05),
-  compactness_thre = 0.8
+  consensus_thre = 0.8
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ BCR.cluster(
 
 \item{cluster_thre}{Minimal clustering criteria. Defaluts to (3 + floor(nrow(input)/100000).}
 
-\item{compactness_thre}{The compactness threshold for filtering clusters. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.}
+\item{consensus_thre}{The consensus threshold for filtering clusters. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.}
 }
 \value{
 Clonal families inferred by fastBCR

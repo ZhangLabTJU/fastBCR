@@ -2,22 +2,21 @@
 % Please edit documentation in R/Clonal_Family_Simulation.R
 \name{germline2fas}
 \alias{germline2fas}
-\title{Function: Generation of a fasta file consisting of germline sequences}
+\title{Function: Generation of a fasta file consisting of germline sequences.}
 \usage{
-germline2fas(family_num)
+germline2fas(gemline_num, filename)
 }
 \arguments{
-\item{family_num}{The number of simulated clonal families.}
+\item{gemline_num}{The number of simulated germline sequences.}
+
+\item{filename}{Path to save fasta file.}
 }
 \value{
-A faste file of randomly generated germline sequences.
+A saved fasta file consisting of randomly generated germline sequences that need to be annotated subsequently.
 }
 \description{
-Randomly generate germline sequences and convert them to a fasta file.
+Randomly generate germline sequences based in V(D)J recombination and convert them to a fasta file.
 }
 \examples{
-data("ighv_hum_df")
-data("ighd_hum_df")
-data("ighj_hum_df")
-germline_fasta = germline2fas(10)
+germline2fas(100, filename = "Simulation/Germline.fasta")
 }
