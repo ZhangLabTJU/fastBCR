@@ -39,8 +39,8 @@ BiocManager::install("ggmsa")
 Now you can install the development version of fastBCR like so:
 
 ``` r
-install.packages("devtools")
-devtools::install_github("ZhangLabTJU/fastBCR")
+install.packages("remotes")
+remotes::install_github("ZhangLabTJU/fastBCR")
 library(fastBCR)
 ```
 
