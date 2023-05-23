@@ -18,7 +18,7 @@ discovery.
 
 ### REFERENCE
 
-Kaixuan Wang, Jian Zhang\*. **fastBCR: a k-mer-based approach for fast
+Kaixuan Wang, Xihao Hu, Jian Zhang\*. **fastBCR: a k-mer-based approach for fast
 inferencing clonal families from large-scale B cell repertoire
 sequencing data.** (manuscript in submission)
 
