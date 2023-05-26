@@ -15,7 +15,6 @@ Depends:
     msa,
 Imports:
     dplyr,
-    ggmsa,
     Biostrings,
     RColorBrewer,
     stringr,
