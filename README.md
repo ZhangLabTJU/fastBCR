@@ -35,7 +35,7 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install(c("msa","ggtree","ggmsa"))
 ```
 
-Or you can install all the required R packages through the requirement.R file by entering:
+Or you can install all the required R packages through the _requirement.R_ file by entering:
 
 ``` r
 source("requirement.R")
