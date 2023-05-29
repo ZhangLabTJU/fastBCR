@@ -25,7 +25,7 @@ sequencing data.** (manuscript in submission)
 ## Installation
 
 Before installing fastBCR, you need to download the dependency packages
-msa and ggmsa using Bioconductor. To install these packages, start R
+msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
 (version “4.2”) and enter:
 
 ``` r
@@ -33,6 +33,12 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install(c("msa","ggtree","ggmsa"))
+```
+
+Or you can install all the required R packages through the requirement.R file by entering:
+
+``` r
+source("requirement.R")
 ```
 
 Now you can install the development version of fastBCR like so:
