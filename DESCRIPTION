@@ -12,6 +12,7 @@ Depends:
     R (>= 4.2.0),
     ggplot2,
     statnet,
+    ggmsa,
     msa,
 Imports:
     dplyr,
