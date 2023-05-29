@@ -32,8 +32,7 @@ msa and ggmsa using Bioconductor. To install these packages, start R
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-BiocManager::install("msa")
-BiocManager::install("ggmsa")
+BiocManager::install(c("msa","ggtree","ggmsa"))
 ```
 
 Now you can install the development version of fastBCR like so:
