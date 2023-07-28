@@ -294,6 +294,51 @@ msa.logo <- function(bcr_clusters, n) {
     geom_msaBar()
 }
 
+#' Function: Visualization of seqlogo of junction_aa sequences within a cluster
+#'
+#' Perform seqlogo on the junction amino acid of all sequences in the clonal family for visualization.
+#' @param bcr_clusters clonal families inferred by fastBCR
+#' @param n select a cluster to visualize
+#'
+#' @return cluster sequences visualization. From top to bottom are title(Vgene_Jgene_junction_aaLength), seqlogo, ggmsa, and msabar
+#' @export
+#'
+#' @examples
+#' data("bcr_clusters")
+#' seqlogo(bcr_clusters, 20)
+seqlogo <- function(bcr_clusters, n) {
+  seqs_aa0 <- bcr_clusters[[n]][["junction_aa"]]
+  MSAalign_aa <- msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
+  seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
+  SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
+  seqs_aa_no <- gsub("-", "", seqs_aa)
+  loc <- sort_msa(seqs_aa_no, seqs_aa0)
+  SEQs_aa@ranges@NAMES <- name(bcr_clusters, n, loc)
+  v_call <- unique(bcr_clusters[[n]][["v_call"]])
+  j_call <- unique(bcr_clusters[[n]][["j_call"]])
+  len <- unique(nchar(seqs_aa))
+  vjlen <- paste(paste(v_call, collapse = ","), "_", paste(j_call, collapse = ","), "_Length:", len, sep = "")
+  clu.title <- vjlen
+  ggseqlogo::ggseqlogo(seqs_aa, method = "prob") +
+    ggtitle(clu.title) +
+    theme_bw() +
+    theme(
+      panel.grid.major = element_line(colour = NA),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill = "transparent", colour = NA),
+      plot.title = element_text(lineheight = .8, size = 16, face = "bold", hjust = 0.5),
+      strip.text = element_text(lineheight = .8, size = 12, face = "bold", hjust = 0.5),
+      panel.grid.minor = element_blank(),
+      axis.title = element_text(face = "bold", size = 12, colour = "black"),
+      axis.text = element_text(face = "bold", size = 10, colour = "black"),
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold", size = 12),
+      legend.text = element_text(face = "bold", size = 10)
+    ) +
+    guides(fill = guide_legend(byrow = TRUE)) +
+    coord_cartesian(clip = "off")
+}
+
 SeqDist <- function(x, y) {
   if (nchar(x) != nchar(y)) {
     return(NA)

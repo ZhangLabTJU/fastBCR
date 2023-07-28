@@ -225,9 +225,8 @@ each_round <- function(input, mut, start, end) {
 #' @export
 #'
 #' @examples
-#' data("germline_data") # read.table('Simulation/Germline_igblast_db-pass_parse-select.tsv', header = T, sep = "\t")
-#' CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = 'Simulation/10_0.001.fasta')
-
+#' data("germline_data")
+#' CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = "Simulation/10_0.001.fasta")
 CF2fas <- function(germline_data, CF_n, mut_ratio, filename) {
   germline_data <- data.pro(germline_data)
   data <- germline_data[sample(seq_len(nrow(germline_data)), CF_n, replace = FALSE), ]

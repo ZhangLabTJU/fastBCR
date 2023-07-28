@@ -6,7 +6,7 @@
 \usage{
 BCR.cluster(
   input,
-  similarity_thre = 0.1,
+  overlap_thre = 0.1,
   cluster_thre = 3 + floor(nrow(input)/1e+05),
   consensus_thre = 0.8
 )
@@ -14,11 +14,11 @@ BCR.cluster(
 \arguments{
 \item{input}{AIRR format data after Data_Processing}
 
-\item{similarity_thre}{The similarity threshold for merging two clusters whose selectable range is (0,1]. Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.}
+\item{overlap_thre}{The overlap coefficient threshold for merging two clusters whose selectable range is (0,1]. Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.}
 
 \item{cluster_thre}{Minimal clustering criteria. Defaluts to (3 + floor(nrow(input)/100000).}
 
-\item{consensus_thre}{The consensus threshold for filtering clusters. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.}
+\item{consensus_thre}{The consensus score threshold for filtering candidates. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.}
 }
 \value{
 Clonal families inferred by fastBCR
