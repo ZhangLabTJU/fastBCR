@@ -19,7 +19,7 @@ discovery.
 ### REFERENCE
 
 Kaixuan Wang, Xihao Hu, Jian Zhang\*. **Fast Clonal Family Inference from Large-scale 
-B Cell Repertoire Sequencing Data.** (Available at SSRN: https://ssrn.com/abstract=4431127 or http://dx.doi.org/10.2139/ssrn.4431127)
+B Cell Repertoire Sequencing Data.** (Available at SSRN: https://ssrn.com/abstract=4431127 or http://dx.doi.org/10.2139/ssrn.4431127, preprint)
 
 ## Installation
 
