@@ -28,11 +28,10 @@ msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
 (version “4.1.0”) and enter:
 
 ``` r
-install.packages("proj4")
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-BiocManager::install(c("msa","ggtree","ggmsa"))
+BiocManager::install(c("proj4", "msa","ggtree","ggmsa"))
 ```
 
 Or you can install all the required R packages through the _requirement.R_ file by entering:
