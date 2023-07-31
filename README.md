@@ -25,9 +25,10 @@ B Cell Repertoire Sequencing Data.** (Available at SSRN: https://ssrn.com/abstra
 
 Before installing fastBCR, you need to download the dependency packages
 msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
-(version “4.2”) and enter:
+(version “4.1.0”) and enter:
 
 ``` r
+install.packages("proj4")
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
@@ -84,7 +85,6 @@ are reserved. Sequences with the same ‘v_call’, ‘j_call’ and
 ‘junction_aa’ are considered identical and deduplicated.
 
 ``` r
-library(fastBCR)
 #> Loading required package: ggplot2
 #> Loading required package: network
 #> 
@@ -147,7 +147,6 @@ pre-clustering and optimized clustering, to infer clonal families fast
 and accurately.
 
 ``` r
-library(fastBCR)
 data("input")
 bcr_clusters <- BCR.cluster(input) # A few parameters are optional. See the function introduction (?BCR.cluster) for details.
 #> use default substitution matrix
@@ -166,7 +165,6 @@ analysis according to your needs.
 #### Pieplot of V/J usage frequency
 
 ``` r
-library(fastBCR)
 data("input")
 pie.freq(input, "v_call")
 ```
@@ -175,7 +173,6 @@ pie.freq(input, "v_call")
 #### Histogram of junction length
 
 ``` r
-library(fastBCR)
 data("input")
 junc.len(input, "AA")
 ```
@@ -184,7 +181,6 @@ junc.len(input, "AA")
 #### Plot of phylogenetic tree and multiple sequences alignment
 
 ``` r
-library(fastBCR)
 data(bcr_clusters)
 msa.tree(bcr_clusters, 20)
 #> use default substitution matrix
@@ -226,7 +222,6 @@ ClonalTree is a new algorithm to reconstruct BCR lineage trees that incorporates
 ##### Using ClonalTree      
 
 ``` r
-library(fastBCR)
 data(bcr_clusters)
 Clonal.tree(bcr_clusters, 1)
 #> use default substitution matrix
@@ -238,7 +233,6 @@ Clonal.tree(bcr_clusters, 1)
 #### Visualization of junction_aa sequences within a cluster
 
 ``` r
-library(fastBCR)
 data(bcr_clusters)
 msa.logo(bcr_clusters, 20)
 #> use default substitution matrix
@@ -251,7 +245,6 @@ msa.logo(bcr_clusters, 20)
 #### Boxplot of SHM ratios in four isotypes in different samples
 
 ``` r
-library(fastBCR)
 data("SHM_ratio_1")
 data("SHM_ratio_2")
 data("SHM_ratio_3")
@@ -276,7 +269,6 @@ SHM.sample(df)
 #### Scatter diagram of cluster size (x axis), cluster number (y axis) and SHM ratio (point size) of all clusters in a sample
 
 ``` r
-library(fastBCR)
 data("bcr_clusters")
 SHM.cluster(bcr_clusters)
 #> use default substitution matrix
@@ -290,7 +282,6 @@ SHM.cluster(bcr_clusters)
 #### Network of CSR within a sample
 
 ``` r
-library(fastBCR)
 data("bcr_clusters")
 CSR.sample(bcr_clusters)
 #> Registered S3 method overwritten by 'GGally':
@@ -303,7 +294,6 @@ CSR.sample(bcr_clusters)
 #### Network of CSR within a cluster
 
 ``` r
-library(fastBCR)
 data("bcr_clusters")
 CSR.cluster(bcr_clusters, 1)
 ```
@@ -324,7 +314,6 @@ combined with sequence annotation software, and here we recommend using IgBlast.
 <img src="man/figures/README-Simulation-1.png" width="100%" />
 
 ``` r
-library(fastBCR)
 germline2fas(100, filename = "Simulation/Germline.fasta")
 # Annotation
 germline_data = read.table('Simulation/Germline_igblast_db-pass_parse-select.tsv', header = T, sep = "\t")
