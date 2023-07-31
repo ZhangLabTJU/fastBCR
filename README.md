@@ -46,44 +46,6 @@ Now you can install the development version of fastBCR like so:
 install.packages("devtools")
 devtools::install_github("ZhangLabTJU/fastBCR")
 library(fastBCR)
-```
-
-## Sample dataset
-
-A real example AIRR Rearrangement dataset (‘test_data’) is included in
-the fastBCR package. The dataset consists of BCR sequencing data from
-peripheral blood samples of a COVID-19 patient (Galson et al., 2020).
-Inferencing clonal families requires the following columns to be present
-in the table:
-
-``` r
-## "sequence_id"
-## "v_call"
-## "j_call"
-## "junction_aa"
-## "junction" (Optional. Needed for phylogenetic tree construction.)
-## "c_call" (Optional. Needed for isotypes related analyis.)
-```
-
-## Example
-
-fastBCR is an automatic BCR clonal family inference method, which also
-incorporates multiple functional modules for downstream analyses.
-fastBCR is composed of three parts: **Data Processing**, **Clonal Family Inferencing**, and
-**Downstream Analysis**. In addition, fastBCR can be combined with annotation 
-software (_e.g._ IgBlast) for B-cell **Clonal Family Simulation**.
-
-<img src="man/figures/README-overview-1.png" width="100%" />
-
-### Data Processing
-
-Data Processing is the first step of fastBCR to process raw data. The
-input of the function needs to meet the AIRR standard format. Only
-productive sequences whose junction amino acid lengths between 9 and 26
-are reserved. Sequences with the same ‘v_call’, ‘j_call’ and
-‘junction_aa’ are considered identical and deduplicated.
-
-``` r
 #> Loading required package: ggplot2
 #> Loading required package: network
 #> 
@@ -134,6 +96,44 @@ are reserved. Sequences with the same ‘v_call’, ‘j_call’ and
 #> The following object is masked from 'package:base':
 #> 
 #>     strsplit
+```
+
+## Sample dataset
+
+A real example AIRR Rearrangement dataset (‘test_data’) is included in
+the fastBCR package. The dataset consists of BCR sequencing data from
+peripheral blood samples of a COVID-19 patient (Galson et al., 2020).
+Inferencing clonal families requires the following columns to be present
+in the table:
+
+``` r
+## "sequence_id"
+## "v_call"
+## "j_call"
+## "junction_aa"
+## "junction" (Optional. Needed for phylogenetic tree construction.)
+## "c_call" (Optional. Needed for isotypes related analyis.)
+```
+
+## Example
+
+fastBCR is an automatic BCR clonal family inference method, which also
+incorporates multiple functional modules for downstream analyses.
+fastBCR is composed of three parts: **Data Processing**, **Clonal Family Inferencing**, and
+**Downstream Analysis**. In addition, fastBCR can be combined with annotation 
+software (_e.g._ IgBlast) for B-cell **Clonal Family Simulation**.
+
+<img src="man/figures/README-overview-1.png" width="100%" />
+
+### Data Processing
+
+Data Processing is the first step of fastBCR to process raw data. The
+input of the function needs to meet the AIRR standard format. Only
+productive sequences whose junction amino acid lengths between 9 and 26
+are reserved. Sequences with the same ‘v_call’, ‘j_call’ and
+‘junction_aa’ are considered identical and deduplicated.
+
+``` r
 data("test_data")
 input <- data.pro(test_data)
 ```
