@@ -70,7 +70,7 @@ in the table:
 
 fastBCR is an automatic BCR clonal family inference method, which also
 incorporates multiple functional modules for downstream analyses.
-fastBCR is composed of three parts: **Data Processing**, **BCR Clustering**, and
+fastBCR is composed of three parts: **Data Processing**, **Clonal Family Inferencing**, and
 **Downstream Analysis**. In addition, fastBCR can be combined with annotation 
 software (_e.g._ IgBlast) for B-cell **Clonal Family Simulation**.
 
