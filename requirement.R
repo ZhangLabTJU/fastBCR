@@ -1,5 +1,6 @@
 install.packages("devtools")
 library(devtools)
+install.packages("proj4")
 install_version("ggplot2", version = "3.4.2", repos = "http://cran.us.r-project.org")
 install_version("statnet", version = "2019.6", repos = "http://cran.us.r-project.org")
 install_version("dplyr", version = "1.1.2", repos = "http://cran.us.r-project.org")
