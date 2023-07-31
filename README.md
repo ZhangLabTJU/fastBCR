@@ -46,56 +46,6 @@ Now you can install the development version of fastBCR like so:
 install.packages("devtools")
 devtools::install_github("ZhangLabTJU/fastBCR")
 library(fastBCR)
-#> Loading required package: ggplot2
-#> Loading required package: network
-#> 
-#> 'network' 1.18.1 (2023-01-24), part of the Statnet Project
-#> * 'news(package="network")' for changes since last version
-#> * 'citation("network")' for citation information
-#> * 'https://statnet.org' for help, support, and other information
-#> Loading required package: ggmsa
-#> Registered S3 methods overwritten by 'ggalt':
-#>   method                  from   
-#>   grid.draw.absoluteGrob  ggplot2
-#>   grobHeight.absoluteGrob ggplot2
-#>   grobWidth.absoluteGrob  ggplot2
-#>   grobX.absoluteGrob      ggplot2
-#>   grobY.absoluteGrob      ggplot2
-#> ggmsa v1.4.0  Document: http://yulab-smu.top/ggmsa/
-#> 
-#> If you use ggmsa in published research, please cite:
-#> L Zhou, T Feng, S Xu, F Gao, TT Lam, Q Wang, T Wu, H Huang, L Zhan, L Li, Y Guan, Z Dai*, G Yu* ggmsa: a visual exploration tool for multiple sequence alignment and associated data. Briefings in Bioinformatics. DOI:10.1093/bib/bbac222
-#> Loading required package: msa
-#> Loading required package: Biostrings
-#> Loading required package: BiocGenerics
-#> 
-#> Attaching package: 'BiocGenerics'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     IQR, mad, sd, var, xtabs
-#> The following objects are masked from 'package:base':
-#> 
-#>     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
-#>     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
-#>     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
-#>     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
-#>     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
-#>     table, tapply, union, unique, unsplit, which.max, which.min
-#> Loading required package: S4Vectors
-#> Loading required package: stats4
-#> 
-#> Attaching package: 'S4Vectors'
-#> The following objects are masked from 'package:base':
-#> 
-#>     expand.grid, I, unname
-#> Loading required package: IRanges
-#> Loading required package: XVector
-#> Loading required package: GenomeInfoDb
-#> 
-#> Attaching package: 'Biostrings'
-#> The following object is masked from 'package:base':
-#> 
-#>     strsplit
 ```
 
 ## Sample dataset
@@ -148,10 +98,6 @@ and accurately.
 ``` r
 data("input")
 bcr_clusters <- BCR.cluster(input) # A few parameters are optional. See the function introduction (?BCR.cluster) for details.
-#> use default substitution matrix
-#> use default substitution matrix
-#> ...
-#> use default substitution matrix
 ```
 
 ### Downstream Analysis
@@ -182,9 +128,6 @@ junc.len(input, "AA")
 ``` r
 data(bcr_clusters)
 msa.tree(bcr_clusters, 20)
-#> use default substitution matrix
-#> Parameter setting = useAbundance:  True ; revision:  True ; trim: True
-#> done
 ```
 <img src="man/figures/README-msa.tree-1.png" width="80%" />
 
@@ -223,9 +166,6 @@ ClonalTree is a new algorithm to reconstruct BCR lineage trees that incorporates
 ``` r
 data(bcr_clusters)
 Clonal.tree(bcr_clusters, 1)
-#> use default substitution matrix
-#> Parameter setting = useAbundance:  True ; revision:  True ; trim: True
-#> done
 ```
 <img src="man/figures/README-Clonal.tree-1.png" width="70%" />
 
@@ -234,9 +174,6 @@ Clonal.tree(bcr_clusters, 1)
 ``` r
 data(bcr_clusters)
 msa.logo(bcr_clusters, 20)
-#> use default substitution matrix
-#> Coordinate system already present. Adding new coordinate system, which will
-#> replace the existing one.
 ```
 
 <img src="man/figures/README-msa.logo-1.png" width="30%" />
@@ -260,7 +197,6 @@ df <- data.frame(
   Sample5 = SHM_ratio_5
 )
 SHM.sample(df)
-#> Using Isotypes as id variables
 ```
 
 <img src="man/figures/README-SHM.sample-1.png" width="50%" />
@@ -270,10 +206,6 @@ SHM.sample(df)
 ``` r
 data("bcr_clusters")
 SHM.cluster(bcr_clusters)
-#> use default substitution matrix
-#> use default substitution matrix
-#> ...
-#> use default substitution matrix
 ```
 
 <img src="man/figures/README-SHM.cluster-1.png" width="50%" />
@@ -283,9 +215,6 @@ SHM.cluster(bcr_clusters)
 ``` r
 data("bcr_clusters")
 CSR.sample(bcr_clusters)
-#> Registered S3 method overwritten by 'GGally':
-#>   method from   
-#>   +.gg   ggplot2
 ```
 
 <img src="man/figures/README-CSR.sample-1.png" width="50%" />
