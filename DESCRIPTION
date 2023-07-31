@@ -3,7 +3,7 @@ Type: Package
 Title: a k-mer-based approach for fast inferencing clonal families from large-scale B cell repertoire sequencing data
 Version: 1.0.0
 Author: Kaixuan Wang, Jian Zhang*
-Maintainer: Kaixuan Wang <3018241020@tju.edu.cn>
+Maintainer: Kaixuan Wang <casey_wang1209@tju.edu.cn>
 Description: fastBCR is an automatic BCR clonal family inference method, which also incorporates multiple functional modules for downstream analyses. fastBCR is composed of three parts: Data Processing, BCR Clustering, and Downstream Analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
