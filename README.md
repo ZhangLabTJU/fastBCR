@@ -3,7 +3,7 @@
 
 # fastBCR
 
-### a heuristic method for fast BCR clonal family inference from large-scale AIRR-seq data
+### A heuristic method for fast BCR clonal family inference from large-scale AIRR-seq data
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -24,8 +24,8 @@ B Cell Repertoire Sequencing Data.** (Available at SSRN: https://ssrn.com/abstra
 ## Installation
 
 Before installing fastBCR, you need to download the dependency packages
-msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
-(version “4.1.0”) and enter:
+proj4, msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
+(at least version “4.1.0”) and enter:
 
 ``` r
 if (!require("BiocManager", quietly = TRUE))
