@@ -246,7 +246,7 @@ Clonal.tree <- function(bcr_clusters, n) {
     quote = F
   )
   system("python3 ClonalTree/src/clonalTree.py  -i ClonalTree/Examples/input/CF.fasta -o ClonalTree/Examples/output/CF.abRT.nk -a 1 -r 1 -t 1")
-  tree <- read.tree("ClonalTree/Examples/output/CF.abRT.nk")
+  tree <- ape::read.tree("ClonalTree/Examples/output/CF.abRT.nk")
   ggtree(tree, size = 1, col = "deepskyblue3", options(ignore.negative.edge = TRUE)) +
     # ggtitle(title)+
     geom_nodelab(size = 4, color = "purple4", hjust = 1.2, vjust = -0.3) +
