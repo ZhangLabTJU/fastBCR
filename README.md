@@ -17,7 +17,7 @@ construction, somatic hypermutation (SHM), and class switch analysis
 discovery.
 
 ### REFERENCE
-Wang, K., Hu, X., and Zhang, J. (2023). **Fast clonal family inference from large-scale B cell repertoire sequencing data.** Cell Rep Methods, 100601. 10.1016/j.crmeth.2023.100601.
+Wang, K., Hu, X., and Zhang, J. (2023). **Fast clonal family inference from large-scale B cell repertoire sequencing data.** Cell Rep Methods, https://doi.org/10.1016/j.crmeth.2023.100601.
 
 ## Installation
 
