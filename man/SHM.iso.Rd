@@ -2,7 +2,7 @@
 % Please edit documentation in R/Downstream_Analysis.R
 \name{SHM.iso}
 \alias{SHM.iso}
-\title{Function: Calculation of SHM ratios in different isotypes in each sample}
+\title{Calculation: SHM ratios of clustered sequences in different isotypes from a sample}
 \usage{
 SHM.iso(bcr_clusters)
 }
@@ -10,12 +10,8 @@ SHM.iso(bcr_clusters)
 \item{bcr_clusters}{clonal families inferred by fastBCR}
 }
 \value{
-four SHM ratio in different isotypes ("IGHD", "IGHM", "IGHA", and "IGHG") calculated by all clusters inferred from a repertoire
+SHM ratios of clustered sequences in four isotypes ("IGHD", "IGHM", "IGHA", and "IGHG")
 }
 \description{
-Calculate SHM ratios in different isotypes of all clusters inferred from a repertoire.
-}
-\examples{
-data("bcr_clusters")
-SHM.iso(bcr_clusters)
+Calculation: SHM ratios of clustered sequences in different isotypes from a sample
 }

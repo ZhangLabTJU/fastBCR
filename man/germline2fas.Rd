@@ -17,6 +17,3 @@ A saved fasta file consisting of randomly generated germline sequences that need
 \description{
 Randomly generate germline sequences based in V(D)J recombination and convert them to a fasta file.
 }
-\examples{
-germline2fas(100, filename = "Simulation/Germline.fasta")
-}

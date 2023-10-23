@@ -11,19 +11,25 @@ LazyData: true
 Depends: 
     R (>= 4.1.0),
     ggplot2,
-    statnet,
-    ggmsa,
-    msa,
-Imports:
     dplyr,
+    statnet,
+    msa
+Imports:
     Biostrings,
     RColorBrewer,
+    ggmsa,
     stringr,
     ggtree,
     ape,
     ggseqlogo,
     ggpubr,
+    ggridges,
+    pROC,
     reshape2,
     GGally,
-    magrittr
+    magrittr,
+    rstatix,
+    pheatmap,
+    cowplot,
+    treemap
 RoxygenNote: 7.2.3
