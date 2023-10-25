@@ -64,6 +64,12 @@
 #' data("SHM_ratio_5")
 "SHM_ratio_5"
 
+#' Data: As a sample data for Simulation
+#'
+#' @examples
+#' data("germline_data")
+"germline_data"
+
 #' ighv_hum_df
 #'
 #' human germline IgH-V (heavy chain v gene segments). When multiple alleles were present, the

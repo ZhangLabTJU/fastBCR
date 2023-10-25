@@ -5,19 +5,20 @@
 #'
 #' @return tree map
 #' @export
-plot.treemap <- function(input, bcr_clusters) {
+treemap.plot <- function(input, bcr_clusters) {
   size <- sapply(bcr_clusters, function(x) nrow(x))
   clustered_ids <- unique(unlist(lapply(bcr_clusters, function(x) x[["sequence_id"]])))
   unclu_num <- nrow(input) - length(clustered_ids)
-  size <- c(size, rep(1, unclu_num))
+  # size <- c(size, rep(1, unclu_num))
+  size <- c(size, unclu_num)
   data <- data.frame(
     category = 1:length(size),
-    value = size
+    size = size
   )
 
   treemap::treemap(data,
-    index = "category", vSize = "value", vColor = "value",
-    type = "value", fontsize.labels = 0, border.col = "gray"
+    index = "category", vSize = "size", vColor = "size",
+    type = "size", fontsize.labels = 0, border.col = "gray"
   )
 }
 
@@ -79,7 +80,7 @@ Metrics.df <- function(input, bcr_clusters, group_label) {
 #'
 #' @return Bubble plot
 #' @export
-plot.clu.size <- function(df) {
+clu.size.plot <- function(df) {
   ggplot(df, aes(x = size, y = num, fill = group)) +
     geom_point(aes(size = size), alpha = 0.75, shape = 21, color = "black") +
     labs(x = "Size of Clusters", y = "Number of Clusters", fill = "group", size = "Size of Clusters") +
@@ -109,7 +110,7 @@ plot.clu.size <- function(df) {
 #'
 #' @return Boxplot
 #' @export
-plot.Tcf20 <- function(df) {
+Tcf20.plot <- function(df) {
   res <- ggpubr::compare_means(formula = value ~ group, df) %>% filter(p.signif != "ns")
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -152,7 +153,7 @@ plot.Tcf20 <- function(df) {
 #'
 #' @return Pie chart. The top ten most frequent genes are shown, and the rest are represented by 'others'
 #' @export
-plot.pie.freq <- function(clustered_seqs, colname = c("v_call", "j_call")) {
+pie.freq.plot <- function(clustered_seqs, colname = c("v_call", "j_call")) {
   gene_table <- as.data.frame(table(clustered_seqs[, colname]))
   gene_table <- gene_table[order(gene_table$Freq, decreasing = TRUE), ]
   gene_table$Var1 <- as.character(gene_table$Var1)
@@ -206,7 +207,7 @@ plot.pie.freq <- function(clustered_seqs, colname = c("v_call", "j_call")) {
 #'
 #' @return Heatmap
 #' @export
-plot.vjpair.sample <- function(clustered_seqs) {
+vjpair.sample.plot <- function(clustered_seqs) {
   vjpair <- paste(clustered_seqs$v_call, clustered_seqs$j_call, sep = "_")
   clustered_seqs$vjpair <- vjpair
   uni_V <- names(table(clustered_seqs$v_call))
@@ -251,7 +252,7 @@ plot.vjpair.sample <- function(clustered_seqs) {
 #'
 #' @return Heatmap
 #' @export
-plot.vjpair.group <- function(group1_clustered_seqs, group1_label, group2_clustered_seqs, group2_label) {
+vjpair.group.plot <- function(group1_clustered_seqs, group1_label, group2_clustered_seqs, group2_label) {
   group1_clustered_seqs$vjpair <- paste(group1_clustered_seqs$v_call, group1_clustered_seqs$j_call, sep = "_")
   group2_clustered_seqs$vjpair <- paste(group2_clustered_seqs$v_call, group2_clustered_seqs$j_call, sep = "_")
   group1_V <- table(group1_clustered_seqs$v_call)
@@ -353,7 +354,7 @@ gene.fre.df <- function(clustered_seqs, colname = c("v_call", "j_call"), uni_gen
 #'
 #' @return Boxplot
 #' @export
-plot.gene.fre <- function(df) {
+gene.fre.plot <- function(df) {
   df$y <- df$y * 100
   df$x <- as.factor(df$x)
   stat.test <- df %>%
@@ -391,7 +392,7 @@ plot.gene.fre <- function(df) {
 #'
 #' @return junction amino acid length distribution from a sample
 #' @export
-plot.len.sample <- function(clustered_seqs) {
+len.sample.plot <- function(clustered_seqs) {
   nchar_junc <- nchar(clustered_seqs[, "junction_aa"])
   junc <- as.clustered_seqs.frame(nchar_junc)
 
@@ -422,7 +423,7 @@ plot.len.sample <- function(clustered_seqs) {
 #'
 #' @return junction amino acid length distribution between the two groups
 #' @export
-plot.len.group <- function(df) {
+len.group.plot <- function(df) {
   res <- ggpubr::compare_means(formula = value ~ group, df) %>% filter(p.signif != "ns")
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -540,7 +541,7 @@ sort.msa <- function(seqs, seqs0) {
 #'
 #' @return Visualization of MSA. From top to bottom are title("Vgene_Jgene_Length"), seqlogo, ggmsa, and msabar
 #' @export
-plot.msa <- function(bcr_clusters, index, type = c("AA", "DNA")) {
+msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
   if (type == "AA") {
     seqs_aa0 <- bcr_clusters[[index]][["junction_aa"]]
     MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
@@ -583,7 +584,7 @@ plot.msa <- function(bcr_clusters, index, type = c("AA", "DNA")) {
 #'
 #' @return Seqlogo
 #' @export
-plot.seqlogo <- function(bcr_clusters, index, type = c("AA", "DNA")) {
+seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
   if (type == "AA") {
     seqs_aa0 <- bcr_clusters[[index]][["junction_aa"]]
     MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
@@ -631,7 +632,7 @@ plot.seqlogo <- function(bcr_clusters, index, type = c("AA", "DNA")) {
 #'
 #' @return the reconstructed BCR lineage tree
 #' @export
-plot.clonal.tree <- function(bcr_clusters, index) {
+clonal.tree.plot <- function(bcr_clusters, index) {
   ids <- bcr_clusters[[index]]$sequence_id
   l <- nchar(ids)
   if (min(l) > 5) {
@@ -732,7 +733,7 @@ SHM.clu <- function(bcr_clusters) {
 #'
 #' @return Boxplot
 #' @export
-plot.SHM <- function(df) {
+SHM.plot <- function(df) {
   res <- ggpubr::compare_means(formula = value ~ group, df) %>% filter(p.signif != "ns")
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -820,7 +821,7 @@ SHM.iso <- function(bcr_clusters) {
 #'
 #' @return Boxplot
 #' @export
-plot.SHM.iso <- function(df) {
+SHM.iso.plot <- function(df) {
   res <- ggpubr::compare_means(formula = value ~ Isotypes, df) %>% filter(p.signif != "ns")
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -866,7 +867,7 @@ plot.SHM.iso <- function(df) {
 #'
 #' @return Visualization of isotype co-occurrence within a BCR cluster. Circle size represents the number of sequences carrying a given isotype. Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses. The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among cluster.
 #' @export
-plot.CSR.cluster <- function(bcr_clusters, index) {
+CSR.cluster.plot <- function(bcr_clusters, index) {
   tmp <- bcr_clusters[[index]]
   bcr_clusters.count <- nrow(tmp)
   tmp.cw <- matrix(0, 1, ncol = 11)
@@ -924,7 +925,7 @@ plot.CSR.cluster <- function(bcr_clusters, index) {
 #'
 #' @return Visualization of isotype co-occurrence within BCR clusters. Circle size represents the number of clusters carrying a given isotype. Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses. The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among clusters.
 #' @export
-plot.CSR.sample <- function(bcr_clusters) {
+CSR.sample.plot <- function(bcr_clusters) {
   bcr.cluster.isotypes <- NULL
   for (i in seq_along(bcr_clusters)) {
     tmp <- bcr_clusters[[i]]
@@ -1037,7 +1038,7 @@ NAb.ratio <- function(input, bcr_clusters, NAb_v, NAb_j, NAb_cdr3) {
 #'
 #' @return Boxplot
 #' @export
-plot.NAb.ratio <- function(df) {
+NAb.ratio.plot <- function(df) {
   res <- ggpubr::compare_means(formula = value ~ group, df) %>% filter(p.signif != "ns")
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -1081,7 +1082,7 @@ plot.NAb.ratio <- function(df) {
 #'
 #' @return ROC curve
 #' @export
-plot.NAb.roc <- function(roc) {
+NAb.roc.plot <- function(roc) {
   lab <- paste("AUC: ", round(roc$auc, 3), sep = "")
   pROC::ggroc(roc, size = 1, legacy.axes = T) +
     theme_classic() +
