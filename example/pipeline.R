@@ -37,7 +37,10 @@ HC_04_clusters = BCR.cluster(HC_04)
 HC_05_clusters = BCR.cluster(HC_05)
 
 ## treemap visualization (single sample)
-plot.treemap(COVID_01, COVID_01_clusters)
+s = Sys.time()
+treemap.plot(HC_01, HC_01_clusters)
+e = Sys.time()
+e-s
 
 # Clusters metrics
 COVID_01_metrics = Metrics.df(COVID_01, COVID_01_clusters, "COVID")
@@ -64,7 +67,7 @@ clu_size_df = data.frame(group = c(rep('COVID', length(Covid_clu_size)),
                           rep('HC', length(Healthy_clu_size))),
                          size = c(Covid_clu_size, Healthy_clu_size),
                          num = c(Covid_clu_n, Healthy_clu_n))
-plot.clu.size(clu_size_df)
+clu.size.plot(clu_size_df)
 
 # Downstream analysis
 ## Diversity:Tcf20 score (between groups)
@@ -72,7 +75,7 @@ Tcf20_df = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group, 
                                 HC_01_metrics$Group, HC_02_metrics$Group, HC_03_metrics$Group, HC_04_metrics$Group, HC_05_metrics$Group),
                       value = c(COVID_01_metrics$Tcf20, COVID_02_metrics$Tcf20, COVID_03_metrics$Tcf20, COVID_04_metrics$Tcf20, COVID_05_metrics$Tcf20,
                                 HC_01_metrics$Tcf20, HC_02_metrics$Tcf20, HC_03_metrics$Tcf20, HC_04_metrics$Tcf20, HC_05_metrics$Tcf20))
-plot.Tcf20(Tcf20_df)
+Tcf20.plot(Tcf20_df)
 
 ## Clustered seqs
 COVID_01_clustered_seqs = clu2df(COVID_01_clusters)
@@ -90,13 +93,13 @@ HC_clustered_seqs = rbind(HC_01_clustered_seqs, HC_02_clustered_seqs, HC_03_clus
 
 ## Gene usage
 ### Pie chart:V/J gene (single sample)
-plot.pie.freq(COVID_01_clustered_seqs, "v_call")
-plot.pie.freq(COVID_01_clustered_seqs, "j_call")
+pie.freq.plot(COVID_01_clustered_seqs, "v_call")
+pie.freq.plot(COVID_01_clustered_seqs, "j_call")
 ### Heatmap:VJ-pair (single group)
-plot.vjpair.sample(COVID_clustered_seqs)
-plot.vjpair.sample(HC_clustered_seqs)
+vjpair.sample.plot(COVID_clustered_seqs)
+vjpair.sample.plot(HC_clustered_seqs)
 ### Heatmap:VJ-pair (between groups)
-plot.vjpair.group(COVID_clustered_seqs, 'COVID',
+vjpair.group.plot(COVID_clustered_seqs, 'COVID',
                   HC_clustered_seqs, 'HC')
 ### Boxplot (between groups)
 COVID_vcall = table(COVID_clustered_seqs$v_call)
@@ -112,7 +115,7 @@ v_fre = rbind(gene.fre.df(COVID_01_clustered_seqs, 'v_call', uni_gene, 'COVID'),
               gene.fre.df(HC_03_clustered_seqs, 'v_call', uni_gene, 'HC'),
               gene.fre.df(HC_04_clustered_seqs, 'v_call', uni_gene, 'HC'),
               gene.fre.df(HC_05_clustered_seqs, 'v_call', uni_gene, 'HC'))
-plot.gene.fre(v_fre)
+gene.fre.plot(v_fre)
 
 COVID_jcall = table(COVID_clustered_seqs$j_call)
 HC_jcall = table(HC_clustered_seqs$j_call)
@@ -127,11 +130,11 @@ j_fre = rbind(gene.fre.df(COVID_01_clustered_seqs, 'j_call', uni_gene, 'COVID'),
               gene.fre.df(HC_03_clustered_seqs, 'j_call', uni_gene, 'HC'),
               gene.fre.df(HC_04_clustered_seqs, 'j_call', uni_gene, 'HC'),
               gene.fre.df(HC_05_clustered_seqs, 'j_call', uni_gene, 'HC'))
-plot.gene.fre(j_fre)
+gene.fre.plot(j_fre)
 
 ## Junction length
 ### single sample
-plot.len.sample(COVID_01_clustered_seqs)
+len.sample.plot(COVID_01_clustered_seqs)
 
 ### between groups
 length_df = data.frame(group = c(rep(COVID_01_metrics$Group, nrow(COVID_01_clustered_seqs)),
@@ -154,22 +157,22 @@ length_df = data.frame(group = c(rep(COVID_01_metrics$Group, nrow(COVID_01_clust
                                  nchar(HC_03_clustered_seqs$junction_aa),
                                  nchar(HC_04_clustered_seqs$junction_aa),
                                  nchar(HC_05_clustered_seqs$junction_aa)))
-plot.len.group(length_df)
+len.group.plot(length_df)
 
 ## MSA
 ### DNA (single cluster)
-plot.msa(COVID_01_clusters, 200, 'DNA')
+msa.plot(COVID_01_clusters, 200, 'DNA')
 ### AA (single cluster)
-plot.msa(COVID_01_clusters, 200, 'AA')
+msa.plot(COVID_01_clusters, 200, 'AA')
 
 ## Seqlogo:DNA/AA (single cluster)
 ### DNA (single cluster)
-plot.seqlogo(COVID_01_clusters, 200, 'DNA')
+seqlogo.plot(COVID_01_clusters, 200, 'DNA')
 ### AA (single cluster)
-plot.seqlogo(COVID_01_clusters, 200, 'AA')
+seqlogo.plot(COVID_01_clusters, 200, 'AA')
 
 ## Clonal tree (single cluster)
-plot.clonal.tree(COVID_01_clusters, 200)
+clonal.tree.plot(COVID_01_clusters, 200)
 
 ## SHM
 ### cluster SHM (between groups)
@@ -177,7 +180,7 @@ SHM_df = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group, CO
                               HC_01_metrics$Group, HC_02_metrics$Group, HC_03_metrics$Group, HC_04_metrics$Group, HC_05_metrics$Group),
                     value = c(COVID_01_metrics$SHM_ratio, COVID_02_metrics$SHM_ratio, COVID_03_metrics$SHM_ratio, COVID_04_metrics$SHM_ratio, COVID_05_metrics$SHM_ratio,
                               HC_01_metrics$SHM_ratio, HC_02_metrics$SHM_ratio, HC_03_metrics$SHM_ratio, HC_04_metrics$SHM_ratio, HC_05_metrics$SHM_ratio))
-plot.SHM(SHM_df)
+SHM.plot(SHM_df)
 
 ### isotype SHM (within groups)
 SHM_iso_df = data.frame(group = c(rep(COVID_01_metrics$Group, 4),
@@ -186,17 +189,16 @@ SHM_iso_df = data.frame(group = c(rep(COVID_01_metrics$Group, 4),
                                   rep(COVID_04_metrics$Group, 4),
                                   rep(COVID_05_metrics$Group, 4)),
                         Isotypes = factor(rep(c("IGHD", "IGHM", "IGHA", "IGHG"), 5)), # Total number of samples
-                        value = c(COVID_01_metrics$SHM_iso, COVID_02_metrics$SHM_iso, COVID_03_metrics$SHM_iso, COVID_04_metrics$SHM_iso, COVID_05_metrics$SHM_iso,
-                                  HC_01_metrics$SHM_iso, HC_02_metrics$SHM_iso, HC_03_metrics$SHM_iso, HC_04_metrics$SHM_iso, HC_05_metrics$SHM_iso))
-plot.SHM.iso(SHM_iso_df)
+                        value = c(COVID_01_metrics$SHM_iso, COVID_02_metrics$SHM_iso, COVID_03_metrics$SHM_iso, COVID_04_metrics$SHM_iso, COVID_05_metrics$SHM_iso))
+SHM.iso.plot(SHM_iso_df)
 
 ## CSR
 ### single cluster
-plot.CSR.cluster(COVID_01_clusters, 50)
+CSR.cluster.plot(COVID_01_clusters, 50)
 
 ### single sample
-plot.CSR.sample(COVID_01_clusters)
-plot.CSR.sample(HC_01_clusters)
+CSR.sample.plot(COVID_01_clusters)
+CSR.sample.plot(HC_01_clusters)
 
 ## NAb ratio
 ### boxplot (between groups)
@@ -222,7 +224,7 @@ NAb_Ratio = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group,
                           NAb.ratio(HC_03, HC_03_clusters, NAb_v, NAb_j, NAb_cdr3),
                           NAb.ratio(HC_04, HC_04_clusters, NAb_v, NAb_j, NAb_cdr3),
                           NAb.ratio(HC_05, HC_05_clusters, NAb_v, NAb_j, NAb_cdr3)))
-plot.NAb.ratio(NAb_Ratio)
+NAb.ratio.plot(NAb_Ratio)
 
 ### ROC (between groups)
 roc = pROC::roc(NAb_Ratio[,1], NAb_Ratio[,2],
@@ -231,6 +233,6 @@ roc = pROC::roc(NAb_Ratio[,1], NAb_Ratio[,2],
           auc = TRUE,
           ci = TRUE,
           smooth = F)
-plot.NAb.roc(roc)
+NAb.roc.plot(roc)
 
 ## BCR data simulation
