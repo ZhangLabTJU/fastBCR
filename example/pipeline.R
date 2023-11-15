@@ -1,238 +1,215 @@
-library(fastBCR)
+#### Fast BCR clonal family inference
+### 1. Data loading
+# Absolute path to the 'COVID'/'HC' folder in the 'example' folder in fastBCR package.
+COVID_folder_path <- '~/Documents/Rpackage/fastBCR/example/COVID'
+HC_folder_path <- '~/Documents/Rpackage/fastBCR/example/HC'
+# Load files from 'COVID_folder_path'/'HC_folder_path' into list.
+# The type of files can be 'csv', 'tsv', or 'Rdata'.
+COVID_raw_data_list <- data.load(folder_path = COVID_folder_path, type = 'csv')
+HC_raw_data_list <- data.load(folder_path = HC_folder_path, type = 'csv')
+# Or you can load one file at a time.
+# COVID_file_path <- '~/Documents/Rpackage/fastBCR/example/COVID/COVID_01.csv'
+# COVID_load_file <- data.load(folder_path = COVID_file_path, type = 'csv')
 
-# Load data
-load('example/COVID_01.Rdata')
-load('example/COVID_02.Rdata')
-load('example/COVID_03.Rdata')
-load('example/COVID_04.Rdata')
-load('example/COVID_05.Rdata')
-load('example/HC_01.Rdata')
-load('example/HC_02.Rdata')
-load('example/HC_03.Rdata')
-load('example/HC_04.Rdata')
-load('example/HC_05.Rdata')
+### 2. Data preprocessing
+# Preprocessing of raw data to meet fastBCR requirements for input data.
+# The input of the function needs to meet the AIRR standard format (containing at least 'sequence_id', 'v_call', 'j_call', and 'junction_aa' information).
+# Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
+# Sequences with the same 'v_call', 'j_call' and 'junction_aa' are considered identical and deduplicated.
+COVID_pro_data_list <- data.preprocess(pro_data_list = COVID_raw_data_list)
+HC_pro_data_list <- data.preprocess(pro_data_list = HC_raw_data_list)
 
-# Data processing
-COVID_01 = data.pro(COVID_01)
-COVID_02 = data.pro(COVID_02)
-COVID_03 = data.pro(COVID_03)
-COVID_04 = data.pro(COVID_04)
-COVID_05 = data.pro(COVID_05)
-HC_01 = data.pro(HC_01)
-HC_02 = data.pro(HC_02)
-HC_03 = data.pro(HC_03)
-HC_04 = data.pro(HC_04)
-HC_05 = data.pro(HC_05)
+### 3. BCR clonal family inferring
+# Fast clonal family inference from preprocessed data.
+# The 'cluster_thre' parameter represents minimal clustering criteria (minimum number of sequences needed to form a cluster) and defaults to 3.
+# For high efficiency, the 'cluster_thre' is increased by 1 for every 100,000 entries of input data.
+# The 'overlap_thre' parameter represents overlap coefficient threshold for merging two clusters, selectable range (0,1) and defaults to 0.1.
+# Lower 'overlap_thre' may lead to overclustering while higher thresholds may lead to the split of clonal families.
+# The 'consensus_thre' parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
+# A higher 'consensus_thre' means stricter inference of the cluster.
+COVID_clusters_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
+HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
 
-# BCR clustering
-COVID_01_clusters = BCR.cluster(COVID_01)
-COVID_02_clusters = BCR.cluster(COVID_02)
-COVID_03_clusters = BCR.cluster(COVID_03)
-COVID_04_clusters = BCR.cluster(COVID_04)
-COVID_05_clusters = BCR.cluster(COVID_05)
-HC_01_clusters = BCR.cluster(HC_01)
-HC_02_clusters = BCR.cluster(HC_02)
-HC_03_clusters = BCR.cluster(HC_03)
-HC_04_clusters = BCR.cluster(HC_04)
-HC_05_clusters = BCR.cluster(HC_05)
+### 4. Classification of clustered and unclustered sequences
+# Merge all the clustered sequences in each sample into 'clustered_seqs'.
+# Merge all the unclustered sequences in each sample into 'unclustered_seqs'.
+COVID_seqs_list <- Clustered.seqs(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list)
+HC_seqs_list <- Clustered.seqs(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list)
+# All the clustered/unclustered sequences from different samples in a group can also be merged.
+COVID_all_clustered_seqs = NULL
+for(i in 1:length(COVID_seqs_list$clustered_seqs)){
+  COVID_all_clustered_seqs = rbind(COVID_all_clustered_seqs, COVID_seqs_list$clustered_seqs[[i]])
+}
+COVID_all_unclustered_seqs = NULL
+for(i in 1:length(COVID_seqs_list$unclustered_seqs)){
+  COVID_all_unclustered_seqs = rbind(COVID_all_unclustered_seqs, COVID_seqs_list$unclustered_seqs[[i]])
+}
+HC_all_clustered_seqs = NULL
+for(i in 1:length(HC_seqs_list$clustered_seqs)){
+  HC_all_clustered_seqs = rbind(HC_all_clustered_seqs, HC_seqs_list$clustered_seqs[[i]])
+}
+HC_all_unclustered_seqs = NULL
+for(i in 1:length(HC_seqs_list$unclustered_seqs)){
+  HC_all_unclustered_seqs = rbind(HC_all_unclustered_seqs, HC_seqs_list$unclustered_seqs[[i]])
+}
 
-## treemap visualization (single sample)
-s = Sys.time()
-treemap.plot(HC_01, HC_01_clusters)
-e = Sys.time()
-e-s
 
-# Clusters metrics
-COVID_01_metrics = Metrics.df(COVID_01, COVID_01_clusters, "COVID")
-COVID_02_metrics = Metrics.df(COVID_02, COVID_02_clusters, "COVID")
-COVID_03_metrics = Metrics.df(COVID_03, COVID_03_clusters, "COVID")
-COVID_04_metrics = Metrics.df(COVID_04, COVID_04_clusters, "COVID")
-COVID_05_metrics = Metrics.df(COVID_05, COVID_05_clusters, "COVID")
-HC_01_metrics = Metrics.df(HC_01, HC_01_clusters, "HC")
-HC_02_metrics = Metrics.df(HC_02, HC_02_clusters, "HC")
-HC_03_metrics = Metrics.df(HC_03, HC_03_clusters, "HC")
-HC_04_metrics = Metrics.df(HC_04, HC_04_clusters, "HC")
-HC_05_metrics = Metrics.df(HC_05, HC_05_clusters, "HC")
+#### Downstream analysis of clonal families
+### 1. Summary of clusters from a sample
+# Summarize the number of clusters, the average size of clusters and the proportion of clustered sequences.
+COVID_clusters_summary = Clusters.summary(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list)
+HC_clusters_summary = Clusters.summary(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list)
+COVID_01_summary = COVID_clusters_summary$COVID_01
+print(COVID_01_summary)
+HC_01_summary = HC_clusters_summary$HC_01
+print(HC_01_summary)
 
-## Number&Size (between groups)
-Covid_clu.size = sapply(c(COVID_01_clusters, COVID_02_clusters, COVID_03_clusters, COVID_04_clusters, COVID_05_clusters),
-                        function(x) nrow(x))
-Covid_clu_size = as.numeric(names(table(Covid_clu.size)))
-Covid_clu_n = as.numeric(table(Covid_clu.size))
-Healthy_clu.size = sapply(c(HC_01_clusters, HC_02_clusters, HC_03_clusters, HC_04_clusters, HC_05_clusters),
-                          function(x) nrow(x))
-Healthy_clu_size = as.numeric(names(table(Healthy_clu.size)))
-Healthy_clu_n = as.numeric(table(Healthy_clu.size))
-clu_size_df = data.frame(group = c(rep('COVID', length(Covid_clu_size)),
-                          rep('HC', length(Healthy_clu_size))),
-                         size = c(Covid_clu_size, Healthy_clu_size),
-                         num = c(Covid_clu_n, Healthy_clu_n))
-clu.size.plot(clu_size_df)
+### 2. Diversity analysis
+# (1) Number and size of clusters
+# Bubble plot showing the size and number of clusters between two groups
+clu.size.plot(clusters_list1 = COVID_clusters_list, group1_label = 'COVID',
+              clusters_list2 = HC_clusters_list, group2_label = 'HC')
 
-# Downstream analysis
-## Diversity:Tcf20 score (between groups)
-Tcf20_df = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group, COVID_03_metrics$Group, COVID_04_metrics$Group, COVID_05_metrics$Group,
-                                HC_01_metrics$Group, HC_02_metrics$Group, HC_03_metrics$Group, HC_04_metrics$Group, HC_05_metrics$Group),
-                      value = c(COVID_01_metrics$Tcf20, COVID_02_metrics$Tcf20, COVID_03_metrics$Tcf20, COVID_04_metrics$Tcf20, COVID_05_metrics$Tcf20,
-                                HC_01_metrics$Tcf20, HC_02_metrics$Tcf20, HC_03_metrics$Tcf20, HC_04_metrics$Tcf20, HC_05_metrics$Tcf20))
-Tcf20.plot(Tcf20_df)
+# (2) Tcf20 score
+# Tcf20 score represents the proportion of sequences attributed to the top 20 clonal families out of the total number of BCR sequences.
+# Boxplot showing the Tcf20 scores between two groups.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+Tcf20.plot(clusters_list1 = COVID_clusters_list, group1_label = 'COVID',
+           clusters_list2 = HC_clusters_list, group2_label = 'HC')
 
-## Clustered seqs
-COVID_01_clustered_seqs = clu2df(COVID_01_clusters)
-COVID_02_clustered_seqs = clu2df(COVID_02_clusters)
-COVID_03_clustered_seqs = clu2df(COVID_03_clusters)
-COVID_04_clustered_seqs = clu2df(COVID_04_clusters)
-COVID_05_clustered_seqs = clu2df(COVID_05_clusters)
-HC_01_clustered_seqs = clu2df(HC_01_clusters)
-HC_02_clustered_seqs = clu2df(HC_02_clusters)
-HC_03_clustered_seqs = clu2df(HC_03_clusters)
-HC_04_clustered_seqs = clu2df(HC_04_clusters)
-HC_05_clustered_seqs = clu2df(HC_05_clusters)
-COVID_clustered_seqs = rbind(COVID_01_clustered_seqs, COVID_02_clustered_seqs, COVID_03_clustered_seqs, COVID_04_clustered_seqs, COVID_05_clustered_seqs)
-HC_clustered_seqs = rbind(HC_01_clustered_seqs, HC_02_clustered_seqs, HC_03_clustered_seqs, HC_04_clustered_seqs, HC_05_clustered_seqs)
+### 3. Visualization of clusters from a sample
+# Point diagram showing clusters from a sample where a circle represents a cluster.
+# The size and color of the circle represents the size of the cluster.
+Clusters.visualization(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list, index = 1)
+Clusters.visualization(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list, index = 1)
 
-## Gene usage
-### Pie chart:V/J gene (single sample)
-pie.freq.plot(COVID_01_clustered_seqs, "v_call")
-pie.freq.plot(COVID_01_clustered_seqs, "j_call")
-### Heatmap:VJ-pair (single group)
-vjpair.sample.plot(COVID_clustered_seqs)
-vjpair.sample.plot(HC_clustered_seqs)
-### Heatmap:VJ-pair (between groups)
-vjpair.group.plot(COVID_clustered_seqs, 'COVID',
-                  HC_clustered_seqs, 'HC')
-### Boxplot (between groups)
-COVID_vcall = table(COVID_clustered_seqs$v_call)
-HC_vcall = table(HC_clustered_seqs$v_call)
-uni_gene = union(names(COVID_vcall), names(HC_vcall))
-v_fre = rbind(gene.fre.df(COVID_01_clustered_seqs, 'v_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_02_clustered_seqs, 'v_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_03_clustered_seqs, 'v_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_04_clustered_seqs, 'v_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_05_clustered_seqs, 'v_call', uni_gene, 'COVID'),
-              gene.fre.df(HC_01_clustered_seqs, 'v_call', uni_gene, 'HC'),
-              gene.fre.df(HC_02_clustered_seqs, 'v_call', uni_gene, 'HC'),
-              gene.fre.df(HC_03_clustered_seqs, 'v_call', uni_gene, 'HC'),
-              gene.fre.df(HC_04_clustered_seqs, 'v_call', uni_gene, 'HC'),
-              gene.fre.df(HC_05_clustered_seqs, 'v_call', uni_gene, 'HC'))
-gene.fre.plot(v_fre)
+### 4. V/J gene usage
+## (1) Pie chart: V/J gene
+# Pie chart showing the frequency of gene usage.
+# The top ten most frequent genes are shown, and the rest are represented by 'others'.
+# The parameter 'colname' can be 'v_call' for V gene or 'j_call' for J gene.
+# (single sample)
+COVID_01_clustered_seqs = COVID_seqs_list$clustered_seqs$COVID_01
+HC_01_clustered_seqs = HC_seqs_list$clustered_seqs$COVID_01
+pie.freq.plot(clustered_seqs = COVID_01_clustered_seqs, colname = 'v_call')
+pie.freq.plot(clustered_seqs = HC_01_clustered_seqs, colname = 'v_call')
+# (single group)
+pie.freq.plot(clustered_seqs = COVID_all_clustered_seqs, colname = 'j_call')
+pie.freq.plot(clustered_seqs = HC_all_clustered_seqs, colname = 'j_call')
 
-COVID_jcall = table(COVID_clustered_seqs$j_call)
-HC_jcall = table(HC_clustered_seqs$j_call)
-uni_gene = union(names(COVID_jcall), names(HC_jcall))
-j_fre = rbind(gene.fre.df(COVID_01_clustered_seqs, 'j_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_02_clustered_seqs, 'j_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_03_clustered_seqs, 'j_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_04_clustered_seqs, 'j_call', uni_gene, 'COVID'),
-              gene.fre.df(COVID_05_clustered_seqs, 'j_call', uni_gene, 'COVID'),
-              gene.fre.df(HC_01_clustered_seqs, 'j_call', uni_gene, 'HC'),
-              gene.fre.df(HC_02_clustered_seqs, 'j_call', uni_gene, 'HC'),
-              gene.fre.df(HC_03_clustered_seqs, 'j_call', uni_gene, 'HC'),
-              gene.fre.df(HC_04_clustered_seqs, 'j_call', uni_gene, 'HC'),
-              gene.fre.df(HC_05_clustered_seqs, 'j_call', uni_gene, 'HC'))
-gene.fre.plot(j_fre)
+## (2) Boxplot: V/J gene (between groups)
+# Boxplot showing the V/J gene usage of the clustered sequences between two groups.
+# The parameter 'colname' can be 'v_call' for V gene or 'j_call' for J gene.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+gene.fre.plot(group1_seqs_list = COVID_seqs_list,
+              group1_all_clustered_seqs = COVID_all_clustered_seqs,
+              group1_label = 'COVID',
+              group2_seqs_list = HC_seqs_list,
+              group2_all_clustered_seqs = HC_all_clustered_seqs,
+              group2_label = 'HC',
+              colname = 'v_call')
+gene.fre.plot(group1_seqs_list = COVID_seqs_list,
+              group1_all_clustered_seqs = COVID_all_clustered_seqs,
+              group1_label = 'COVID',
+              group2_seqs_list = HC_seqs_list,
+              group2_all_clustered_seqs = HC_all_clustered_seqs,
+              group2_label = 'HC',
+              colname = 'j_call')
 
-## Junction length
-### single sample
-len.sample.plot(COVID_01_clustered_seqs)
+## (3) Heatmap: V-J gene pair
+# Heatmap showing the frequency of V-J gene pair.
+# (single sample)
+vjpair.sample.plot(clustered_seqs = COVID_01_clustered_seqs)
+# (single group)
+vjpair.sample.plot(clustered_seqs = COVID_all_clustered_seqs)
+vjpair.sample.plot(clustered_seqs = HC_all_clustered_seqs)
+# # (between groups) # TODO
+# vjpair.group.plot(group1_all_clustered_seqs = COVID_all_clustered_seqs, group1_label = 'COVID',
+#                   group2_all_clustered_seqs = HC_all_clustered_seqs, group2_label = 'HC')
 
-### between groups
-length_df = data.frame(group = c(rep(COVID_01_metrics$Group, nrow(COVID_01_clustered_seqs)),
-                                 rep(COVID_02_metrics$Group, nrow(COVID_02_clustered_seqs)),
-                                 rep(COVID_03_metrics$Group, nrow(COVID_03_clustered_seqs)),
-                                 rep(COVID_04_metrics$Group, nrow(COVID_04_clustered_seqs)),
-                                 rep(COVID_05_metrics$Group, nrow(COVID_05_clustered_seqs)),
-                                 rep(HC_01_metrics$Group, nrow(HC_01_clustered_seqs)),
-                                 rep(HC_02_metrics$Group, nrow(HC_02_clustered_seqs)),
-                                 rep(HC_03_metrics$Group, nrow(HC_03_clustered_seqs)),
-                                 rep(HC_04_metrics$Group, nrow(HC_04_clustered_seqs)),
-                                 rep(HC_05_metrics$Group, nrow(HC_05_clustered_seqs))),
-                       value = c(nchar(COVID_01_clustered_seqs$junction_aa),
-                                 nchar(COVID_02_clustered_seqs$junction_aa),
-                                 nchar(COVID_03_clustered_seqs$junction_aa),
-                                 nchar(COVID_04_clustered_seqs$junction_aa),
-                                 nchar(COVID_05_clustered_seqs$junction_aa),
-                                 nchar(HC_01_clustered_seqs$junction_aa),
-                                 nchar(HC_02_clustered_seqs$junction_aa),
-                                 nchar(HC_03_clustered_seqs$junction_aa),
-                                 nchar(HC_04_clustered_seqs$junction_aa),
-                                 nchar(HC_05_clustered_seqs$junction_aa)))
-len.group.plot(length_df)
+### 5. Junction length
+# Histogram and density plot showing junction amino acid length of clustered sequences.
+# (single sample)
+len.sample.plot(clustered_seqs = COVID_01_clustered_seqs)
+# (single group)
+len.sample.plot(clustered_seqs = COVID_all_clustered_seqs)
+# Density ridges showing junction amino acid length of clustered sequences between groups.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+len.group.plot(group1_all_clustered_seqs = COVID_all_clustered_seqs, group1_label = 'COVID',
+               group2_all_clustered_seqs = HC_all_clustered_seqs, group2_label = 'HC')
+# Or between clustered sequences and unclustered sequences in a group.
+len.group.plot(group1_all_clustered_seqs = COVID_all_clustered_seqs, group1_label = 'Clustered',
+               group2_all_clustered_seqs = COVID_all_unclustered_seqs, group2_label = 'Unclustered')
 
-## MSA
-### DNA (single cluster)
-msa.plot(COVID_01_clusters, 200, 'DNA')
-### AA (single cluster)
-msa.plot(COVID_01_clusters, 200, 'AA')
+### 6. Multiple sequence alignment (MSA)
+# Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster.
+# The parameter 'index' allows you to choose a cluster for visualization.
+# The parameter 'type' can be 'DNA' for deoxyribonucleic acid or 'AA' for amino acid.
+COVID_01_clusters = COVID_clusters_list$COVID_01
+msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = 'DNA')
+msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = 'AA')
 
-## Seqlogo:DNA/AA (single cluster)
-### DNA (single cluster)
-seqlogo.plot(COVID_01_clusters, 200, 'DNA')
-### AA (single cluster)
-seqlogo.plot(COVID_01_clusters, 200, 'AA')
+### 7. Sequence logo
+# Visualization of sequence logo of junction sequences within a cluster
+seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = 'DNA')
+seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = 'AA')
 
-## Clonal tree (single cluster)
-clonal.tree.plot(COVID_01_clusters, 200)
+### 8. Clonal tree
+# Reconstructing B cell lineage trees with minimum spanning tree and genotype abundances using ClonalTree
+clonal.tree.plot(bcr_clusters = COVID_01_clusters, index = 200, file_path = '~/Documents/Rpackage/fastBCR/ClonalTree')
 
-## SHM
-### cluster SHM (between groups)
-SHM_df = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group, COVID_03_metrics$Group, COVID_04_metrics$Group, COVID_05_metrics$Group,
-                              HC_01_metrics$Group, HC_02_metrics$Group, HC_03_metrics$Group, HC_04_metrics$Group, HC_05_metrics$Group),
-                    value = c(COVID_01_metrics$SHM_ratio, COVID_02_metrics$SHM_ratio, COVID_03_metrics$SHM_ratio, COVID_04_metrics$SHM_ratio, COVID_05_metrics$SHM_ratio,
-                              HC_01_metrics$SHM_ratio, HC_02_metrics$SHM_ratio, HC_03_metrics$SHM_ratio, HC_04_metrics$SHM_ratio, HC_05_metrics$SHM_ratio))
-SHM.plot(SHM_df)
+### 9. Affinity maturation analysis
+## (1) Somatic hypermutation (SHM)
+# Boxplot showing the SHM ratios between two groups.
+# The calculation of SHM ratios may take a while.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+SHM.plot(clusters_list1 = COVID_clusters_list, group1_label = 'COVID',
+         clusters_list2 = HC_clusters_list, group2_label = 'HC')
+# Boxplot showing the SHM ratios of clustered sequences in different isotypes between two groups.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+SHM.iso.plot(clusters_list1 = COVID_clusters_list, group1_label = 'COVID',
+             clusters_list2 = HC_clusters_list, group2_label = 'HC')
 
-### isotype SHM (within groups)
-SHM_iso_df = data.frame(group = c(rep(COVID_01_metrics$Group, 4),
-                                  rep(COVID_02_metrics$Group, 4),
-                                  rep(COVID_03_metrics$Group, 4),
-                                  rep(COVID_04_metrics$Group, 4),
-                                  rep(COVID_05_metrics$Group, 4)),
-                        Isotypes = factor(rep(c("IGHD", "IGHM", "IGHA", "IGHG"), 5)), # Total number of samples
-                        value = c(COVID_01_metrics$SHM_iso, COVID_02_metrics$SHM_iso, COVID_03_metrics$SHM_iso, COVID_04_metrics$SHM_iso, COVID_05_metrics$SHM_iso))
-SHM.iso.plot(SHM_iso_df)
+## (2) Class switch recombination (CSR)
+# Visualization of isotype co-occurrence within a BCR cluster.
+# Circle size represents the number of sequences carrying a given isotype.
+# Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses.
+# The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among cluster.
+# (single cluster)
+CSR.cluster.plot(bcr_clusters = COVID_01_clusters, index = 50)
+# (single sample)
+CSR.sample.plot(bcr_clusters = COVID_01_clusters)
+CSR.sample.plot(bcr_clusters = HC_01_clusters)
 
-## CSR
-### single cluster
-CSR.cluster.plot(COVID_01_clusters, 50)
-
-### single sample
-CSR.sample.plot(COVID_01_clusters)
-CSR.sample.plot(HC_01_clusters)
-
-## NAb ratio
-### boxplot (between groups)
+### 10. NAb query and NAb ratio calculation
+## (1) Load the public antibody database to get the information of neutralizing antibody (NAb) sequences.
+# Here is an example of the Coronavirus Antibody Database (CoV-AbDab).
 CoV_AbDab = read.csv("example/CoV-AbDab_130623.csv")
-CoV_AbDab_vjcdr3 = vector(length = nrow(CoV_AbDab))
+# Obtain the IGHV gene, IGHJ gene and CDRH3 of all antibody sequences
 v = sapply(strsplit(CoV_AbDab$Heavy.V.Gene, ' '), function(x) x[1])
 j = sapply(strsplit(CoV_AbDab$Heavy.J.Gene, ' '), function(x) x[1])
 cdr3 = sapply(strsplit(CoV_AbDab$CDRH3, ' '), function(x) x[1])
-CoV_AbDab_vjcdr3 = paste(v, j, cdr3)
-CoV_AbDab_vjcdr3 = unique(CoV_AbDab_vjcdr3)
-NAb_v = unlist(strsplit(CoV_AbDab_vjcdr3, ' '))[seq(1,3*length(CoV_AbDab_vjcdr3),3)]
-NAb_j = unlist(strsplit(CoV_AbDab_vjcdr3, ' '))[seq(2,3*length(CoV_AbDab_vjcdr3),3)]
-NAb_cdr3 = unlist(strsplit(CoV_AbDab_vjcdr3, ' '))[seq(3,3*length(CoV_AbDab_vjcdr3),3)]
-NAb_Ratio = data.frame(group = c(COVID_01_metrics$Group, COVID_02_metrics$Group, COVID_03_metrics$Group, COVID_04_metrics$Group, COVID_05_metrics$Group,
-                                 HC_01_metrics$Group, HC_02_metrics$Group, HC_03_metrics$Group, HC_04_metrics$Group, HC_05_metrics$Group),
-                value = c(NAb.ratio(COVID_01, COVID_01_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(COVID_02, COVID_02_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(COVID_03, COVID_03_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(COVID_04, COVID_04_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(COVID_05, COVID_05_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(HC_01, HC_01_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(HC_02, HC_02_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(HC_03, HC_03_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(HC_04, HC_04_clusters, NAb_v, NAb_j, NAb_cdr3),
-                          NAb.ratio(HC_05, HC_05_clusters, NAb_v, NAb_j, NAb_cdr3)))
-NAb.ratio.plot(NAb_Ratio)
+vjcdr3 = unique(paste(v, j, cdr3))
 
-### ROC (between groups)
-roc = pROC::roc(NAb_Ratio[,1], NAb_Ratio[,2],
-          levels = c('HC','COVID'),
-          direction = "<",
-          auc = TRUE,
-          ci = TRUE,
-          smooth = F)
-NAb.roc.plot(roc)
+## (2) NAb query
+# Query the corresponding sequence from the public antibody database.
+# The parameter 'method' represents the CDRH3 matching method.
+# It can be 'NA' for perfect match, 'hamming' for hamming distance or 'lv' for Levenshtein distance. Defaults to 'NA'.
+# The parameter 'species' can be 'Mouse' or 'Human'. Defaults to 'Human'.
+# The parameter 'maxDist' represents the maximum distance allowed for matching when the argument 'method' is 'hamming' or 'lv'. Defaults to 'NA'.
+# example to perfect match
+human_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = NA, maxDist = NA, species = 'Human')
+head(human_perfect_match)
+# example with perfect match in 'Mouse' species
+mouse_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = NA, maxDist = NA, species = 'Mouse')
+# example with fuzzy matching with 'hamming' method and max distance of 1
+human_hamming_1_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = 'hamming', maxDist = 1, species = 'Human')
 
-## BCR data simulation
+## (3) NAb ratio calculation
+# NAb ratio is established as an indicator of the proportional prevalence of neutralizing antibody sequences within expanded clonotypes in each sample.
+# It is defined as the fraction of the number of NAb sequences within clonal families to the total number of NAb sequences present in each sample.
+# Boxplot showing the NAb ratios between the two groups.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+NAb.ratio.plot(pro_data_list1 = COVID_pro_data_list, clusters_list1 = COVID_clusters_list, group1_label = 'COVID',
+               pro_data_list2 = HC_pro_data_list, clusters_list2 = HC_clusters_list, group2_label = 'HC', NAb_vjcdr3 = vjcdr3)
+
