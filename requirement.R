@@ -14,6 +14,7 @@ install.packages("ape")
 
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
+BiocManager::install("proj4")
 BiocManager::install("Biostrings")
 BiocManager::install("msa")
 BiocManager::install("ggtree")

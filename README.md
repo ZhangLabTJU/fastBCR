@@ -3,7 +3,7 @@
 
 # fastBCR
 
-### a heuristic method for fast BCR clonal family inference from large-scale AIRR-seq data
+### A heuristic method for fast BCR clonal family inference from large-scale AIRR-seq data
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -17,13 +17,15 @@ construction, somatic hypermutation (SHM), and class switch analysis
 discovery.
 
 ### REFERENCE
-Wang, K., Hu, X., and Zhang, J. (2023). **Fast clonal family inference from large-scale B cell repertoire sequencing data.** Cell Rep Methods, https://doi.org/10.1016/j.crmeth.2023.100601.
+
+Kaixuan Wang, Xihao Hu, Jian Zhang\*. **Fast Clonal Family Inference from Large-scale 
+B Cell Repertoire Sequencing Data.** (Available at SSRN: https://ssrn.com/abstract=4431127 or http://dx.doi.org/10.2139/ssrn.4431127, preprint)
 
 ## Installation
 
 Before installing fastBCR, you need to download the dependency packages
-msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
-(version “4.1.0”) and enter:
+proj4, msa, ggtree and ggmsa using Bioconductor. To install these packages, start R
+(at least version “4.1.0”) and enter:
 
 ``` r
 if (!require("BiocManager", quietly = TRUE))
@@ -41,9 +43,7 @@ source("requirement.R")
 Now you can install the development version of fastBCR like so:
 
 ``` r
-if(!require(devtools)){
-  install.packages("devtools") # If not already installed
-}
+install.packages("devtools")
 devtools::install_github("ZhangLabTJU/fastBCR")
 library(fastBCR)
 ```
@@ -99,8 +99,6 @@ and accurately.
 data("input")
 bcr_clusters <- BCR.cluster(input) # A few parameters are optional. See the function introduction (?BCR.cluster) for details.
 ```
-
-TODO: Visualization(Network)
 
 ### Downstream Analysis
 

@@ -21,3 +21,7 @@ A saved fasta file consisting of sequences from distinct clonal familes that nee
 \description{
 Function: Generation of a fasta file consisting of sequences from distinct clonal familes.
 }
+\examples{
+data("germline_data")
+CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = "Simulation/10_0.001.fasta")
+}

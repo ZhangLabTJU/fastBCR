@@ -1,3 +1,42 @@
+data.pro <- function(raw_data) {
+  # junction length
+  loc <- which(nchar(raw_data$junction_aa) >= 9 & nchar(raw_data$junction_aa) <= 26)
+  pro_data <- raw_data[loc, ]
+  not.triple <- which(nchar(pro_data$junction) %% 3 != 0)
+  if (length(not.triple) != 0) {
+    pro_data <- pro_data[-not.triple, ]
+  }
+
+  # productive only
+  junction_aa <- pro_data$junction_aa
+  star <- grep("\\*", junction_aa)
+  underline <- grep("_", junction_aa)
+  X <- grep("X", junction_aa)
+  unpro <- union(star, underline)
+  rm <- union(unpro, X)
+  if (length(rm) != 0) {
+    pro_data <- pro_data[-rm, ]
+  }
+
+  # v-j-junction unique
+  rm <- union(which(is.na(pro_data$v_call)), which(is.na(pro_data$j_call)))
+  if (length(rm) != 0) {
+    pro_data <- pro_data[-rm, ]
+  }
+  v_call <- strsplit(pro_data$v_call, "\\*")
+  v_call <- sapply(v_call, function(x) x[1])
+  j_call <- strsplit(pro_data$j_call, "\\*")
+  j_call <- sapply(j_call, function(x) x[1])
+  pro_data$v_call <- v_call
+  pro_data$j_call <- j_call
+  junction_aa <- pro_data$junction_aa
+  vjcdr3 <- paste(v_call, j_call, junction_aa)
+  pro_data <- pro_data[!duplicated(vjcdr3), ]
+  seq_ids <- pro_data$sequence_id
+  pro_data <- pro_data[!duplicated(seq_ids), ]
+  return(pro_data)
+}
+
 # data.frame to fasta
 df2fas <- function(data, filename) {
   ids <- data$ids
@@ -54,6 +93,9 @@ sub <- function(dna, loc) {
 #'
 #' @return A saved fasta file consisting of randomly generated germline sequences that need to be annotated subsequently.
 #' @export
+#'
+#' @examples
+#' germline2fas(100, filename = "Simulation/Germline.fasta")
 germline2fas <- function(gemline_num, filename) {
   data("ighv_hum_df")
   data("ighd_hum_df")
@@ -181,6 +223,10 @@ each_round <- function(input, mut, start, end) {
 #'
 #' @return A saved fasta file consisting of sequences from distinct clonal familes that need to be annotated subsequently.
 #' @export
+#'
+#' @examples
+#' data("germline_data")
+#' CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = "Simulation/10_0.001.fasta")
 CF2fas <- function(germline_data, CF_n, mut_ratio, filename) {
   germline_data <- data.pro(germline_data)
   data <- germline_data[sample(seq_len(nrow(germline_data)), CF_n, replace = FALSE), ]
