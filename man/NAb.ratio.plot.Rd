@@ -4,14 +4,16 @@
 \alias{NAb.ratio.plot}
 \title{Plot: Boxplot of the NAb ratios between the two groups.}
 \usage{
-NAb.ratio.plot(df)
+NAb.ratio.plot(NAb_ratio_df)
 }
 \arguments{
-\item{df}{Data.frame for NAb ratios of samples}
+\item{NAb_ratio_df}{Dataframe containing the NAb ratios between the two groups.}
 }
 \value{
-Boxplot
+Boxplot showing the NAb ratios between the two groups.
 }
 \description{
+NAb ratio is established as an indicator of the proportional prevalence of neutralizing antibody sequences within expanded clonotypes in each sample
+It is defined as the fraction of the number of NAb sequences within clonal families to the total number of NAb sequences present in each sample
 Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test
 }
