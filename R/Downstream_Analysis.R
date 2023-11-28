@@ -609,7 +609,7 @@ vjpair.group.plot <- function(group1_seqs_list, group1_all_clustered_seqs, group
       plot.title = element_text(lineheight = .8, size = 16, face = "bold", hjust = 0.5),
       axis.title = element_text(face = "bold", size = 12, colour = "black"),
       axis.text = element_text(face = "bold", size = 10, colour = "black"),
-      axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5),
       legend.title = element_text(face = "bold", size = 12),
       legend.text = element_text(face = "bold", size = 10)
     ) +
