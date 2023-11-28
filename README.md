@@ -40,7 +40,7 @@ Or you can install all the required R packages through the _requirement.R_ file 
 source("requirement.R")
 ```
 
-Now you can install the fastBCR like so:
+Now you can install the development version of fastBCR like so:
 
 ``` r
 install.packages("devtools")
