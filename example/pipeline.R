@@ -44,8 +44,44 @@ HC_seqs_list <- Clustered.seqs(pro_data_list = HC_pro_data_list, clusters_list =
 
 
 ### Downstream analysis
-## 1. Single sample/group analysis
-## 1.1 Summary of clusters from a sample
+## 1. Single cluster analysis
+## 1.1 Conserved motifs distribution
+# Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster.
+# The parameter "index" allows you to choose a cluster for visualization.
+# The parameter "type" can be "DNA" for deoxyribonucleic acid or "AA" for amino acid.
+msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA")
+msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
+
+## 1.2 Sequence logo
+# Visualization of sequence logo of junction sequences within a cluster.
+seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA")
+seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
+
+## 1.3 Evolutionary tree
+# Reconstruct a B cell lineage tree with minimum spanning tree and genotype abundances using ClonalTree.
+# The junction of BCR sequences within a cluster will be written as "ClonalFamily_index.fasta" in "ClonalTree/Examples/input" folder.
+# ClonalTree uses Python for compilation, so it needs the absolute path of the Python interpreter in the "python_path" parameter.
+# ClonalTree returns two files in the "ClonalTree/Examples/output" folder.
+# ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format.
+# ClonalFamily_index.nk.csv: a table in csv format, containing the parent relationship and cost.
+clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200, python_path = "/Users/wangkaixuan/anaconda3/bin/python")
+# You can use the clonal.tree.plot() function to visualize the evolutionary tree in R.
+# Orange points represent nodes and blue points represent tips.
+# Abbreviation of "sequence_id" (last 5 characters) are shown.
+# The x-axis shows the absolute genetic distance.
+clonal.tree.plot(nk_path = "ClonalTree/Examples/output/ClonalFamily_200.abRT.nk")
+
+## 1.4 Class switch recombination (CSR) network
+# Visualization of isotype co-occurrence within clusters within a cluster
+# Circle size represents the number of sequences carrying a given isotype.
+# Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses.
+# The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among cluster.
+# Matrix of values of connected edges between clustered sequences in different isotypes is printed.
+CSR.cluster.plot(bcr_clusters = COVID_01_clusters, index = 50)
+
+
+## 2. Single sample/group analysis
+## 2.1 Summary of clusters from a sample
 # Summarize the number of clusters, the average size of clusters and the proportion of clustered sequences.
 COVID_clusters_summary = Clusters.summary(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list)
 HC_clusters_summary = Clusters.summary(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list)
@@ -54,15 +90,15 @@ print(COVID_01_summary)
 HC_01_summary = HC_clusters_summary$HC_01
 print(HC_01_summary)
 
-## 1.2 Visualization of clusters from a sample
+## 2.2 Visualization of clusters from a sample
 # Point diagram showing clusters from a sample where a circle represents a cluster.
 # The size and color of the circle represents the size of the cluster.
 # The parameter "index" represents the index of the sample for visualization.
 Clusters.visualization(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list, index = 1)
 Clusters.visualization(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list, index = 1)
 
-## 1.3 V/J gene usage
-## 1.3.1 Pie chart: V/J gene
+## 2.3 V/J gene usage
+## 2.3.1 Pie chart: V/J gene
 # Pie chart showing the gene usage frequency of clustered sequences.
 # The top ten most frequent genes are shown, and the rest are represented by "others".
 # The parameter "colname" can be "v_call" for V gene or "j_call" for J gene.
@@ -92,7 +128,7 @@ for(i in 1:length(HC_seqs_list$unclustered_seqs)){
 }
 pie.freq.plot(clustered_seqs = COVID_all_clustered_seqs, colname = "v_call")
 pie.freq.plot(clustered_seqs = HC_all_clustered_seqs, colname = "v_call")
-## 1.3.2 Heatmap: V-J gene pair
+## 2.3.2 Heatmap: V-J gene pair
 # Heatmap showing the V-J gene pair frequency of clustered sequences
 # (1) single sample.
 vjpair.sample.plot(clustered_seqs = COVID_01_clustered_seqs)
@@ -100,7 +136,7 @@ vjpair.sample.plot(clustered_seqs = COVID_01_clustered_seqs)
 vjpair.sample.plot(clustered_seqs = COVID_all_clustered_seqs)
 vjpair.sample.plot(clustered_seqs = HC_all_clustered_seqs)
 
-## 1.4 Junction length distribution
+## 2.4 Junction length distribution
 # Histogram and density plot showing the length distribution of junction amino acid of clustered sequences.
 # (1) single sample
 len.sample.plot(clustered_seqs = COVID_01_clustered_seqs)
@@ -115,7 +151,7 @@ len.clustered.plot(clustered_seqs = COVID_01_clustered_seqs,
 len.clustered.plot(clustered_seqs = COVID_all_clustered_seqs,
                    unclustered_seqs = COVID_all_unclustered_seqs)
 
-## 1.5 Class switch recombination (CSR) network
+## 2.5 Class switch recombination (CSR) network
 # Visualization of isotype co-occurrence within clusters from a sample.
 # Circle size represents the number of sequences carrying a given isotype.
 # Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses.
@@ -126,11 +162,11 @@ HC_01_clusters = HC_clusters_list$HC_01
 CSR.sample.plot(bcr_clusters = COVID_01_clusters)
 CSR.sample.plot(bcr_clusters = HC_01_clusters)
 
-### 1.6 Neutralizing antibody (NAb) sequence query
-## 1.6.1 Load the public antibody database to get the information of neutralizing antibody (NAb) sequences.
+### 2.6 Neutralizing antibody (NAb) sequence query
+## 2.6.1 Load the public antibody database to get the information of neutralizing antibody (NAb) sequences.
 # Here is an example of the Coronavirus Antibody Database (CoV-AbDab).
 CoV_AbDab = read.csv("example/CoV-AbDab_130623.csv")
-## 1.6.2 NAb query
+## 2.6.2 NAb query
 # Query the corresponding sequence from the public antibody database.
 # The parameter "method" represents the CDRH3 matching method.
 # It can be "NA" for perfect match, "hamming" for hamming distance or "lv" for Levenshtein distance. Defaults to "NA".
@@ -143,42 +179,6 @@ head(human_perfect_match)
 mouse_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = NA, maxDist = NA, species = "Mouse")
 # example with fuzzy matching with "hamming" method and max distance of 1
 human_hamming_1_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = "hamming", maxDist = 1, species = "Human")
-
-
-## 2. Single cluster analysis
-## 2.1 Conserved motifs distribution
-# Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster.
-# The parameter "index" allows you to choose a cluster for visualization.
-# The parameter "type" can be "DNA" for deoxyribonucleic acid or "AA" for amino acid.
-msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA")
-msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
-
-## 2.2 Sequence logo
-# Visualization of sequence logo of junction sequences within a cluster.
-seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA")
-seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
-
-## 2.3 Evolutionary tree
-# Reconstruct a B cell lineage tree with minimum spanning tree and genotype abundances using ClonalTree.
-# The junction of BCR sequences within a cluster will be written as "ClonalFamily_index.fasta" in "ClonalTree/Examples/input" folder.
-# ClonalTree uses Python for compilation, so it needs the absolute path of the Python interpreter in the "python_path" parameter.
-# ClonalTree returns two files in the "ClonalTree/Examples/output" folder.
-# ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format.
-# ClonalFamily_index.nk.csv: a table in csv format, containing the parent relationship and cost.
-clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200, python_path = "/Users/wangkaixuan/anaconda3/bin/python")
-# You can use the clonal.tree.plot() function to visualize the evolutionary tree in R.
-# Orange points represent nodes and blue points represent tips.
-# Abbreviation of "sequence_id" (last 5 characters) are shown.
-# The x-axis shows the absolute genetic distance.
-clonal.tree.plot(nk_path = "ClonalTree/Examples/output/ClonalFamily_200.abRT.nk")
-
-## 2.4 Class switch recombination (CSR) network
-# Visualization of isotype co-occurrence within clusters within a cluster
-# Circle size represents the number of sequences carrying a given isotype.
-# Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses.
-# The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among cluster.
-# Matrix of values of connected edges between clustered sequences in different isotypes is printed.
-CSR.cluster.plot(bcr_clusters = COVID_01_clusters, index = 50)
 
 
 ## 3. Inter group analysis
