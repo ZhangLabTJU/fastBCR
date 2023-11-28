@@ -1,0 +1,155 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# fastBCR
+### a k-mer-based approach for fast inferencing clonal families from large-scale B cell repertoire sequencing data
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of fastBCR is to rapid inferencing B cell clonal families from massive BCR heavy chain sequences. To facilitate the post-clustering analysis, we also provide a series of functional modules in fastBCR, including multiple sequence alignment (MSA), phylogenetic tree construction, somatic hypermutation (SHM), and class switch analysis (CSR), which can be useful for BCR repertoire analysis and antibody discovery.
+
+### REFERENCE
+Kaixuan Wang, Jian Zhang*. **fastBCR: a k-mer-based approach for fast inferencing clonal families from large-scale B cell repertoire sequencing data.** (manuscript in submission)
+
+## Installation
+
+Before installing fastBCR, you need to download the dependency packages msa and ggmsa using Bioconductor. To install these packages, start R (version "4.2") and enter:
+
+``` r
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("msa")
+BiocManager::install("ggmsa")
+```
+
+Now you can install the development version of fastBCR like so:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("KX-Wang1209/R-package/fastBCR")
+library(fastBCR)
+```
+
+## Sample dataset
+
+A real example AIRR Rearrangement dataset ('test_data') is included in the fastBCR package. The dataset consists of BCR sequencing data from peripheral blood samples of a COVID-19 patient (Galson et al., 2020). Inferencing clonal families requires the following columns to be present in the table:
+
+```{r dataset}
+## "sequence_id"
+## "v_call"
+## "j_call"
+## "junction_aa"
+## "junction" (Optional. Needed for evolutionary tree construction.)
+## "c_call" (Optional. Needed for isotypes related analyis.)
+```
+
+## Example
+
+fastBCR is an automatic BCR clonal family inference method, which also incorporates multiple functional modules for evolutionary analyses. fastBCR is composed of three parts: Data Processing, BCR Clustering, and Evolutionary Analysis.
+
+### Data Processing
+
+Data Processing is the first step of fastBCR to process raw data. The input of the function needs to meet the AIRR standard format. Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved. Sequences with the same 'v_call', 'j_call' and 'junction_aa' are considered identical and deduplicated.
+
+```{r data.pro}
+library(fastBCR)
+data("test_data")
+input <- data.pro(test_data)
+```
+
+### BCR Clustering
+
+BCR Clustering is the core step of fastBCR to infer clonal families from processed data. BCR Clustering consists of two steps, k-mer-based pre-clustering and optimized clustering, to infer clonal families fast and accurately. 
+
+```{r BCR.cluster}
+library(fastBCR)
+data("input")
+bcr_clusters <- BCR.cluster(input) # A few parameters are optional. See the function introduction (?BCR.cluster) for details.
+```
+
+### Evolutionary Analysis
+
+Evolutionary Analysis contains a variety of functional modules, such as multiple sequence alignment (MSA), phylogenetic tree construction, and SHM/CSR analysis. You can choose the plot function for downstream analysis according to your needs.
+
+#### Pieplot of V/J usage frequency
+```{r pie.freq}
+library(fastBCR)
+data("input")
+pie.freq(input, "j_call")
+```
+
+#### Histogram of junction length
+```{r junc.len(input, "AA")}
+library(fastBCR)
+data("input")
+junc.len(input, "AA")
+```
+
+#### Plot of evolutionary tree and multiple sequences alignment (MSA)
+```{r msa.tree}
+library(fastBCR)
+data(bcr_clusters)
+msa.tree(bcr_clusters, 20)
+```
+
+#### Visualization of junction_aa sequences within a cluster
+```{r msa.logo}
+library(fastBCR)
+data(bcr_clusters)
+msa.logo(bcr_clusters, 20)
+```
+
+#### Boxplot of SHM ratios in four isotypes in different samples
+```{r SHM.sample}
+library(fastBCR)
+data("SHM_ratio_1")
+data("SHM_ratio_2")
+data("SHM_ratio_3")
+data("SHM_ratio_4")
+data("SHM_ratio_5")
+df <- data.frame(
+  Isotypes = factor(c("IGHD", "IGHM", "IGHA", "IGHG"),
+    levels = c("IGHD", "IGHM", "IGHA", "IGHG")
+  ),
+  Sample1 = SHM_ratio_1,
+  Sample2 = SHM_ratio_2,
+  Sample3 = SHM_ratio_3,
+  Sample4 = SHM_ratio_4,
+  Sample5 = SHM_ratio_5
+)
+SHM.sample(df)
+```
+
+#### Scatter diagram of cluster size (x axis), cluster number (y axis) and SHM ratio (point size) of all clusters in a sample
+```{r SHM.cluster}
+library(fastBCR)
+data("bcr_clusters")
+SHM.cluster(bcr_clusters)
+```
+
+#### Network of CSR within a sample
+```{r CSR.sample}
+library(fastBCR)
+data("bcr_clusters")
+CSR.sample(bcr_clusters)
+```
+
+#### Network of CSR within a cluster
+```{r CSR.cluster}
+library(fastBCR)
+data("bcr_clusters")
+CSR.cluster(bcr_clusters, 1)
+```
