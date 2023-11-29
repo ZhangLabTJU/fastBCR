@@ -1076,16 +1076,16 @@ clonal.tree.plot <- function(nk_path) {
 
 #' Function: Merge clustered sequences from all BCR clusters and remove duplicates
 #'
-#' @param bcr_cluster clonal families inferred by fastBCR
+#' @param bcr_clusters clonal families inferred by fastBCR
 #'
 #' @return clustered sequences from all BCR clusters
 #' @export
-clu2df <- function(bcr_cluster) {
-  ss <- length(bcr_cluster)
-  cluster.data <- bcr_cluster[[1]]
+clu2df <- function(bcr_clusters) {
+  ss <- length(bcr_clusters)
+  cluster.data <- bcr_clusters[[1]]
   if (ss > 1) {
     for (i in 2:ss) {
-      tmp <- bcr_cluster[[i]]
+      tmp <- bcr_clusters[[i]]
       cluster.data <- rbind(cluster.data, tmp)
     }
   }
@@ -1351,7 +1351,7 @@ SHM.iso.plot <- function(SHM_iso_df) {
     stat_boxplot(aes(color = group), geom = "errorbar", width = 0.1, linewidth = 0.5, position = position_dodge(0.6)) +
     geom_boxplot(aes(fill = group), position = position_dodge(0.6), linewidth = 0.5, width = 0.4, outlier.shape = NA) +
     geom_jitter(aes(fill = group), position = position_jitterdodge(), shape = 21, size = 1, alpha = 0.9) +
-    labs(x = "", y = "SHM Ratio") +
+    labs(x = "", y = "SHM ratio") +
     theme_bw() +
     theme(
       panel.grid.major = element_line(colour = NA),
@@ -1642,7 +1642,7 @@ NAb.ratio.plot <- function(NAb_ratio_df) {
     geom_boxplot(position = position_dodge(0.6), size = 0.5, width = 0.4, outlier.shape = NA) +
     geom_jitter(aes(fill = group), position = position_jitter(0.1), shape = 21, size = 2, alpha = 0.9) +
     xlab("") +
-    ylab("NAb Ratio") +
+    ylab("NAb ratio") +
     theme_bw() +
     theme(
       panel.grid.major = element_line(colour = NA),
