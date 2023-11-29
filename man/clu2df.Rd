@@ -4,10 +4,10 @@
 \alias{clu2df}
 \title{Function: Merge clustered sequences from all BCR clusters and remove duplicates}
 \usage{
-clu2df(bcr_cluster)
+clu2df(bcr_clusters)
 }
 \arguments{
-\item{bcr_cluster}{clonal families inferred by fastBCR}
+\item{bcr_clusters}{clonal families inferred by fastBCR}
 }
 \value{
 clustered sequences from all BCR clusters
