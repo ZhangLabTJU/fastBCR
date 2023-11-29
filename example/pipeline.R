@@ -49,6 +49,8 @@ HC_seqs_list <- Clustered.seqs(pro_data_list = HC_pro_data_list, clusters_list =
 # Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster.
 # The parameter "index" allows you to choose a cluster for visualization.
 # The parameter "type" can be "DNA" for deoxyribonucleic acid or "AA" for amino acid.
+COVID_01_clusters = COVID_clusters_list$COVID_01
+HC_01_clusters = HC_clusters_list$HC_01
 msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA")
 msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
 
@@ -157,8 +159,6 @@ len.clustered.plot(clustered_seqs = COVID_all_clustered_seqs,
 # Lines connecting two circles indicate the enrichment level of observing switches in the two corresponding immunoglobulin subclasses.
 # The enrichment level is the ratio of observed and expected switches if immunoglobulin isotypes are assumed to be independently distributed among cluster.
 # Matrix of values of connected edges between clustered sequences in different isotypes is printed.
-COVID_01_clusters = COVID_clusters_list$COVID_01
-HC_01_clusters = HC_clusters_list$HC_01
 CSR.sample.plot(bcr_clusters = COVID_01_clusters)
 CSR.sample.plot(bcr_clusters = HC_01_clusters)
 
