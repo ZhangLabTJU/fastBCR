@@ -95,7 +95,7 @@ combined with sequence annotation software, and here we recommend using IgBlast.
 
 
 ``` r
-germline2fas(100, filename = "Simulation/Germline.fasta")
+germline2fas(gemline_num = 100, filename = "Simulation/Germline.fasta")
 # Annotation
 germline_data = read.table('Simulation/Germline_igblast_db-pass_parse-select.tsv', header = T, sep = "\t")
 CF2fas(germline_data, CF_n = 10, mut_ratio = 0.001, filename = 'Simulation/10_0.001.fasta')
