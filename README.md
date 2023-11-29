@@ -36,13 +36,13 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install(c("proj4","msa","ggtree","ggmsa"))
 ```
 
-Now you can install the development version of fastBCR like so:
+Now you can install fastBCR like so:
 
 ``` r
 if(!require(devtools)){
   install.packages("devtools")
 }
-devtools::install_github("ZhangLabTJU/fastBCR", ref = "development-version")
+devtools::install_github("ZhangLabTJU/fastBCR")
 ```
 
 ## Usage
