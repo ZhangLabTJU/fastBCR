@@ -74,7 +74,7 @@ You can follow the **'pipeline.R'**
 in **'/example'** folder to run the pipeline example. 
 
 <div align=center>
-<img src="man/figures/README-GraphicalAbstract-1.png" width="50%" />
+<img src="man/figures/README-GraphicalAbstract-1.png" width="60%" />
 </div>
 
 ### Clonal Family Simulation
