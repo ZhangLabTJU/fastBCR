@@ -53,9 +53,7 @@ Ten real example AIRR Rearrangement datasets are included in
 the fastBCR package in the 'example' folder. The datasets consist of BCR 
 sequencing data from peripheral blood samples of five COVID-19 patients
 (Galson et al., 2020) and five healthy donors (Ghraichy et al., 2020).
-Inferencing clonal families requires the following columns to be present
-in the table:
-
+To infer clonal families successfully, the dataset should include essential columns:
 ``` r
 ## "sequence_id"
 ## "v_call"
@@ -69,11 +67,15 @@ in the table:
 
 fastBCR is an automatic BCR clonal family inference method, which also
 incorporates multiple functional modules for downstream analyses.
-fastBCR is composed of two parts: **Fast BCR clonal family inference**, and
+fastBCR is composed of two parts: **BCR clonal family inference**, and
 **Downstream analysis**.
 
 You can follow the **'pipeline.R'** 
 in **'/example'** folder to run the pipeline example. 
+
+<div align=center>
+<img src="man/figures/README-GraphicalAbstract-1.png" width="50%" />
+</div>
 
 ### Clonal Family Simulation
 
