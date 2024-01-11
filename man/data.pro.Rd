@@ -2,16 +2,27 @@
 % Please edit documentation in R/Data_Processing.R
 \name{data.pro}
 \alias{data.pro}
-\title{Function: Preprocessing of raw data to meet fastBCR requirements for input data}
+\title{Function: The first step of fastBCR to process raw data.}
 \usage{
-data.pro(raw_data)
+data.pro(raw_data, count_col_name = NA)
 }
 \arguments{
-\item{raw_data}{AIRR format data. Inference of clonal familes requires following columns to be present in the raw_data: 'sequence_id', 'v_call', 'j_call', 'junction_aa'. 'junction' or 'c_call' are optional if you want to plot 'evolutionary tree' or need isotypes related analyis (SHM/CSR).}
+\item{raw_data}{AIRR format data.
+Inference of clonal familes requires following columns to be present in the raw_data: "sequence_id", "v_call", "j_call", "junction_aa".
+"junction" or "c_call" are optional if you want to plot the evolutionary tree or need isotypes related (SHM/CSR) analysis.}
+
+\item{count_col_name}{The column name for the count of each sequence.
+It can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
+Defaults to "NA" which means the original count of the sequence is not taken into account.}
 }
 \value{
 Processed data as input for clonal family inference
 }
 \description{
-The input of the function needs to meet the AIRR standard format (containing at least 'sequence_id', 'v_call', 'j_call', and 'junction_aa' information). Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved. Sequences with the same 'v_call', 'j_call' and 'junction_aa' are considered identical and deduplicated.
+The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
+Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
+Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
+In each row of processed data, "sequence_id" is the "sequence_id" of sequences with the same clonotype separated by ";".
+"clonotype_count" and "clonotype_fre" is the count and frequency of the clonotype calculated based on "count_col_name" parameter.
+If "junction" ("c_call") is contained in the raw data, it is replaced by the most frequently occurring "junction" ("c_call") in the clonotype.
 }
