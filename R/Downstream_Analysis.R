@@ -1,94 +1,3 @@
-#' Function: Load datasets into a list
-#'
-#' The compressed files in '7zip', 'cab', 'cpio', 'iso9660', 'lha', 'mtree', 'shar', 'rar', 'raw', 'tar', 'tar.gz', 'xar', 'zip', 'warc' format can also be read in
-#'
-#' @param folder_path Path to the data folder
-#' @param storage_format The storage format of data. It can be in 'csv', 'tsv', or 'Rdata' format.
-#'
-#' @return A list where each element is the raw data named after its filename
-#' @export
-data.load <- function(folder_path, storage_format) {
-  info <- file.info(folder_path)
-  if (info$isdir) {
-    file_list <- list.files(folder_path, full.names = TRUE)
-  } else {
-    file_list <- folder_path
-  }
-  archive_format <- c("7zip", "cab", "cpio", "iso9660", "lha", "mtree", "shar", "rar", "raw", "tar", "tar.gz", "xar", "zip", "warc")
-  data_list <- list()
-  pb <- utils::txtProgressBar(min = 0, max = length(file_list), style = 3)
-  for (i in seq_along(file_list)) {
-    file_name <- basename(file_list[i])
-    var_name <- unlist(strsplit(file_name, "\\."))[1]
-    compressed <- sum(sapply(archive_format, function(x) length(grep(x, file_name))))
-    if (compressed) {
-      if (storage_format == "csv") {
-        data_list[[var_name]] <- read.table(archive::archive_read(file_list[i]), header = TRUE, sep = ",")
-      } else if (storage_format == "tsv") {
-        data_list[[var_name]] <- read.table(archive::archive_read(file_list[i]), header = TRUE, sep = "\t")
-      } else if (storage_format == "Rdata") {
-        load(archive::archive_read(file_list[i]))
-        data_list[[var_name]] <- get(var_name)
-      }
-    } else {
-      if (storage_format == "csv") {
-        data_list[[var_name]] <- read.table(file_list[i], header = TRUE, sep = ",")
-      } else if (storage_format == "tsv") {
-        data_list[[var_name]] <- read.table(file_list[i], header = TRUE, sep = "\t")
-      } else if (storage_format == "Rdata") {
-        load(file_list[i])
-        data_list[[var_name]] <- get(var_name)
-      }
-    }
-    setTxtProgressBar(pb, i)
-  }
-
-  return(data_list)
-}
-
-#' Function: Preprocessing of raw data to meet the input requirements for clonal family inference
-#'
-#' @param data_list A list where each element is the raw data named after its filename
-#'
-#' @return A list where each element is the preprocessed data named after its filename
-#' @export
-data.preprocess <- function(data_list) {
-  pro_data_list <- list()
-  pb <- utils::txtProgressBar(min = 0, max = length(data_list), style = 3)
-  for (i in seq_along(data_list)) {
-    data <- data_list[[i]]
-    var_name <- names(data_list[i])
-    processed_data <- data.pro(data)
-    pro_data_list[[var_name]] <- processed_data
-    setTxtProgressBar(pb, i)
-  }
-
-  return(pro_data_list)
-}
-
-#' Function: Fast clonal family inference from preprocessed data
-#'
-#' @param pro_data_list A list where each element is the preprocessed data named after its filename
-#' @param cluster_thre Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
-#' @param overlap_thre The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.
-#' @param consensus_thre The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.
-#'
-#' @return A list where each element is a list of clonal families inferred by fastBCR from a single sample
-#' @export
-data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8) {
-  BCR_clusters_list <- list()
-  pb <- utils::txtProgressBar(min = 0, max = length(pro_data_list), style = 3)
-  for (i in seq_along(pro_data_list)) {
-    data <- pro_data_list[[i]]
-    var_name <- names(pro_data_list)[i]
-    processed_data <- BCR.cluster(data, cluster_thre, overlap_thre, consensus_thre)
-    BCR_clusters_list[[var_name]] <- processed_data
-    setTxtProgressBar(pb, i)
-  }
-
-  return(BCR_clusters_list)
-}
-
 #' Function: Classification of clustered and unclustered sequences
 #'
 #' @param pro_data_list A list where each element is the preprocessed data named after its filename
@@ -843,23 +752,13 @@ len.group.plot <- function(group1_all_clustered_seqs, group1_label,
 name <- function(bcr_clusters, index, loc) {
   id <- bcr_clusters[[index]][["sequence_id"]]
   id <- id[loc]
-  c_call <- bcr_clusters[[index]][["c_call"]]
-  if (all(c(is.null(c_call), all(is.na(c_call))))) {
-    c_call <- c_call[loc]
-    c_call <- Iso.fst(c_call)
-  }
   nn <- length(id)
   names <- c()
   for (i in 1:nn) {
-    if (all(c(is.null(c_call), all(is.na(c_call))))) {
-      tmp.c <- c_call[i]
-    } else {
-      tmp.c <- ""
-    }
     if (i < 10) {
-      tmp.name <- paste(paste("0", i, sep = ""), tmp.c, collapse = NULL)
+      tmp.name <- paste("0", i, sep = "")
     } else {
-      tmp.name <- paste(i, tmp.c, collapse = NULL)
+      tmp.name <- i
     }
     names <- c(names, tmp.name)
   }
@@ -1686,6 +1585,11 @@ NAb.Species.splits <- function(x) {
   return(c(v_call, species))
 }
 
+# Remove the first and last letters of the string
+trim <- function(x) {
+  substr(x, 2, nchar(x) - 1)
+}
+
 #' Function: Query the corresponding sequence from the public antibody database
 #'
 #' @param bcr_clusters Clonal families inferred by fastBCR
@@ -1699,7 +1603,7 @@ NAb.Species.splits <- function(x) {
 NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = "Human") {
   # Record the associated cluster id and merge all the clusters data frames
   clusters_df <- bind_rows(bcr_clusters, .id = "cluster_id")
-  clusters_df$CDRH3 <- substr((clusters_df$junction_aa), 2, nchar((clusters_df$junction_aa)) - 1)
+  clusters_df$CDRH3 <- trim(clusters_df$junction_aa)
 
   # Data preprocessing:
   AbDab_splits <- t(sapply(AbDab$Heavy.V.Gene, NAb.Species.splits))
@@ -1715,22 +1619,18 @@ NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = 
   AbDab <- AbDab[complete.cases(AbDab[, c("v_call", "j_call")]), ]
 
   # Intra-join clusters and dfs to match exactly according to v_call and j_call
-  join <- dplyr::inner_join(clusters_df, AbDab, by = c("v_call", "j_call"), relationship = "many-to-many")
+  join <- inner_join(clusters_df, AbDab, by = c("v_call", "j_call"), relationship = "many-to-many")
+  colnames(join)[c((ncol(clusters_df)+1):ncol(join))] = paste0("NAb_", colnames(join)[c((ncol(clusters_df)+1):ncol(join))])
+  colnames(join)[which(colnames(join) == "CDRH3.x")] = "CDRH3"
+  colnames(join)[which(colnames(join) == "NAb_CDRH3.y")] = "NAb_CDRH3"
 
-  # Setting the comparison method: fuzzy matching with both method and maxDist given
   if (!is.na(method) && !is.na(maxDist)) {
-    result <- AbDab %>%
-      mutate(row_id = row_number()) %>%
-      rowwise() %>%
-      filter(
-        if ((method == "hamming") || (method == "lv")) {
-          min(stringdist::stringdist(CDRH3, .$CDRH3, method = method)) <= maxDist
-        }
-      ) %>%
-      dplyr::inner_join(clusters_df, by = "CDRH3", relationship = "many-to-many")
+    result <- join %>%
+      filter(stringdist::stringdist(trim(CDRH3), trim(NAb_CDRH3), method = method) <= maxDist - 1 )
   } else {
     # Exact matching when neither method nor maxDist is given
-    result <- dplyr::inner_join(clusters_df, AbDab, by = "CDRH3", relationship = "many-to-many")
+    result <- join %>%
+      filter(stringr::str_detect(CDRH3, stringr::fixed(NAb_CDRH3)) & stringr::str_detect(NAb_CDRH3, stringr::fixed(CDRH3)))
   }
 
   if (nrow(result) > 0) {

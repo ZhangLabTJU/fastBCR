@@ -381,3 +381,27 @@ BCR.cluster <- function(input, cluster_thre = 3,
 
   return(bcr_clusters)
 }
+
+#' Function: Fast clonal family inference from preprocessed data
+#'
+#' @param pro_data_list A list where each element is the preprocessed data named after its filename
+#' @param cluster_thre Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param overlap_thre The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.
+#' @param consensus_thre The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.
+#'
+#' @return A list where each element is a list of clonal families inferred by fastBCR from a single sample
+#' @export
+data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8) {
+  BCR_clusters_list <- list()
+  pb <- utils::txtProgressBar(min = 0, max = length(pro_data_list), style = 3)
+  for (i in seq_along(pro_data_list)) {
+    data <- pro_data_list[[i]]
+    var_name <- names(pro_data_list)[i]
+    processed_data <- BCR.cluster(data, cluster_thre, overlap_thre, consensus_thre)
+    BCR_clusters_list[[var_name]] <- processed_data
+    setTxtProgressBar(pb, i)
+  }
+
+  return(BCR_clusters_list)
+}
+
