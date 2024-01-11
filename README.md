@@ -27,7 +27,7 @@ Wang, K., Hu, X., and Zhang, J. (2023). **Fast clonal family inference from larg
 
 Before installing fastBCR, you need to download the dependency packages
 'proj4', 'msa', 'ggtree' and 'ggmsa' using Bioconductor. To install these packages, 
-start R (version “4.1.0”) and enter:
+start R (version >= 4.1.0) and enter:
 
 ``` r
 if (!require("BiocManager", quietly = TRUE))

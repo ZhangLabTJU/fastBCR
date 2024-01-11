@@ -1,28 +1,35 @@
 library(fastBCR)
 
 # You should set "fastBCR" folder as working directory before running pipeline.
+setwd("THE/PATH/TO/FASTBCR/FOLDER") # Replace with your path
 
 ### Fast BCR clonal family inference
 ## 1. Data loading
-# Path to the "COVID"/"HC" folder in the "example" folder in fastBCR package.
+# Path to the "COVID"/"HC" folder in the "example" folder in fastBCR folder.
 COVID_folder_path <- "example/COVID"
 HC_folder_path <- "example/HC"
 # Load files from "COVID_folder_path"/"HC_folder_path" into list.
 # The storage format of data can be in "csv", "tsv", or "Rdata" format.
-# The compressed files in the above storage format in ‘7zip’, ‘cab’, ‘cpio’, ‘iso9660’, ‘lha’, ‘mtree’, ‘shar’, ‘rar’, ‘raw’, ‘tar’, ‘xar’, ‘zip’, ‘warc’ format can also be read in.
+# The compressed files in the above storage format in "7zip", "cab", "cpio", "iso9660", "lha", "mtree", "shar", "rar", "raw", "tar", "xar", "zip", "warc" format can also be read in.
 COVID_raw_data_list <- data.load(folder_path = COVID_folder_path, storage_format = "csv")
 HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "csv")
 # # Or you can load one file at a time.
-# COVID_file_path <- "~/Documents/Rpackage/fastBCR/example/COVID/COVID_01.zip"
+# COVID_file_path <- "example/COVID/COVID_01.zip"
 # COVID_load_file <- data.load(folder_path = COVID_file_path, storage_format = "csv")
 
 ## 2. Data preprocessing
 # Preprocessing of raw data to meet the input requirements for clonal family inference.
 # The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
+# "junction" and "c_call" are optional if you want to plot the evolutionary tree or need isotypes related (SHM/CSR) analysis.
 # Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
-# Sequences with the same "v_call", "j_call" and "junction_aa" are considered identical and deduplicated.
-COVID_pro_data_list <- data.preprocess(data_list = COVID_raw_data_list)
-HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list)
+# The "count_col_name" parameter represents the column name for the count of each sequence which can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
+# It defaults to "NA" which means the original count of the sequence is not taken into account.
+# Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
+# In each row of processed data, "sequence_id" is the "sequence_id" of sequences with the same clonotype separated by ";".
+# "clonotype_count" and "clonotype_fre" is the count and frequency of the clonotype calculated based on "count_col_name" parameter.
+# If "junction" ("c_call") is contained in the raw data, it is replaced by the most frequently occurring "junction" ("c_call") in the clonotype.
+COVID_pro_data_list <- data.preprocess(data_list = COVID_raw_data_list, count_col_name = "consensus_count")
+HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list, count_col_name = "consensus_count")
 
 ## 3. BCR clonal family inference
 # Fast clonal family inference from preprocessed data.
@@ -66,8 +73,9 @@ seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
 # ClonalTree returns two files in the "ClonalTree/Examples/output" folder.
 # ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format.
 # ClonalFamily_index.nk.csv: a table in csv format, containing the parent relationship and cost.
-clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200, python_path = "/Users/wangkaixuan/anaconda3/bin/python")
+clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200, python_path = "/Users/wangkaixuan/anaconda3/bin/python") # Replace with your path
 # You can use the clonal.tree.plot() function to visualize the evolutionary tree in R.
+# The consensus sequence of the cluster is used as the root node of the tree.
 # Orange points represent nodes and blue points represent tips.
 # Abbreviation of "sequence_id" (last 5 characters) are shown.
 # The x-axis shows the absolute genetic distance.
@@ -262,6 +270,7 @@ vjcdr3 = unique(paste(v, j, cdr3))
 # It is defined as the fraction of the number of NAb sequences within clonal families to the total number of NAb sequences present in each sample.
 NAb_ratio_df = NAb.ratio.calculation(pro_data_list1 = COVID_pro_data_list, clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
                                      pro_data_list2 = HC_pro_data_list, clusters_list2 = HC_clusters_list, group2_label = "HC", NAb_vjcdr3 = vjcdr3)
+
 # Boxplot showing the NAb ratios between the two groups.
 # Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
 NAb.ratio.plot(NAb_ratio_df)
