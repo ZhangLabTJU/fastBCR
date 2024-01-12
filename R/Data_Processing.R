@@ -51,9 +51,9 @@ data.load <- function(folder_path, storage_format) {
 #' @description The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
 #' Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
 #' Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
-#' In each row of processed data, "sequence_id" is the "sequence_id" of sequences with the same clonotype separated by ";".
-#' "clonotype_count" and "clonotype_fre" is the count and frequency of the clonotype calculated based on "count_col_name" parameter.
-#' If "junction" ("c_call") is contained in the raw data, it is replaced by the most frequently occurring "junction" ("c_call") in the clonotype.
+#' The column "clonotype_count" is the count of each clonotype.
+#' The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
+#' The column "clone_fre" is the frequency version of "clone_count".
 #'
 #' @param raw_data AIRR format data.
 #' Inference of clonal familes requires following columns to be present in the raw_data: "sequence_id", "v_call", "j_call", "junction_aa".
@@ -68,7 +68,7 @@ data.pro <- function(raw_data, count_col_name = NA) {
   # check if the raw_data meet the requirements on column names
   required_col_names <- c("sequence_id", "v_call", "j_call", "junction_aa")
   if(all(required_col_names %in% colnames(raw_data)) == FALSE){
-    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data")
+    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please XXX")
   }
 
   # junction length filtering
@@ -88,20 +88,21 @@ data.pro <- function(raw_data, count_col_name = NA) {
     productive_data <- raw_data
   }
 
-  # clonotype (v-j-junction_aa) deduplicate
+  # V/J gene without allele
   v_call <- strsplit(productive_data$v_call, "\\*")
   v_call <- sapply(v_call, function(x) x[1])
   j_call <- strsplit(productive_data$j_call, "\\*")
   j_call <- sapply(j_call, function(x) x[1])
   productive_data$v_call <- v_call
   productive_data$j_call <- j_call
-  sequence_id <- productive_data$sequence_id
+
+  # clonotype (v-j-junction_aa) deduplicate
   junction_aa <- productive_data$junction_aa
   if(!is.na(count_col_name)){
-    counts <- productive_data[,count_col_name]
+    count <- productive_data[,count_col_name]
+  }else{
+    count <- rep(1, nrow(productive_data))
   }
-  if(any(colnames(productive_data) %in% "junction")) junction <- productive_data$junction
-  if(any(colnames(productive_data) %in% "c_call")) c_call <- productive_data$c_call
   v_j_junction_aa <- paste(v_call, j_call, junction_aa)
   v_j_junction_aa <- factor(v_j_junction_aa, levels = unique(v_j_junction_aa))
   pro_data <- productive_data[!duplicated(v_j_junction_aa), ]
@@ -109,40 +110,27 @@ data.pro <- function(raw_data, count_col_name = NA) {
   # clonotype backtrack
   index_match <- data.frame(clonotype_index = as.numeric(v_j_junction_aa),
                             orign_index = 1:length(v_j_junction_aa))
+  index_match <- I(split(index_match[,2], list(index_match$clonotype_index), drop = TRUE))
   clonotype_n <- length(unique(v_j_junction_aa))
-  clonotype_sequence_id <- c()
-  clonotype_counts <- c()
-  if(any(colnames(pro_data) %in% "junction")) clonotype_junction <- c()
-  if(any(colnames(pro_data) %in% "c_call")) clonotype_c_call <- c()
+  clone_count = rep(0, clonotype_n)
+  clonotype_count = rep(0, clonotype_n)
+  max_freq_index  = rep(0, clonotype_n)
+
+  # pb <- utils::txtProgressBar(min = 0, max = clonotype_n, style = 3)
   for(i in 1:clonotype_n){
-    tmp.index <- index_match$orign_index[which(index_match$clonotype_index == i)]
-    tmp.clonotype_sequence_id <- paste(sequence_id[tmp.index], collapse = ";")
-    clonotype_sequence_id <- c(clonotype_sequence_id, tmp.clonotype_sequence_id)
-    if(!is.na(count_col_name)){
-      tmp.clonotype_counts <- sum(counts[tmp.index])
-    }else{
-      tmp.clonotype_counts <- length(tmp.index)
-    }
-    clonotype_counts <- c(clonotype_counts, tmp.clonotype_counts)
-    if(any(colnames(pro_data) %in% "junction")){
-      tmp.clonotype_junction <- names(sort(table(junction[tmp.index]),decreasing = T))[1]
-      clonotype_junction <- c(clonotype_junction, tmp.clonotype_junction)
-    }
-    if(any(colnames(pro_data) %in% "c_call")){
-      tmp.c_call <- names(sort(table(c_call[tmp.index]),decreasing = T))[1]
-      clonotype_c_call <- c(clonotype_c_call, tmp.c_call)
-    }
+    tmp.index <- index_match[[i]]
+    tmp.clone_count <- sum(count[tmp.index])
+    tmp.clonotype_count <- length(tmp.index)
+    clone_count[i] = tmp.clone_count
+    clonotype_count[i] = tmp.clonotype_count
+    max_freq_index[i] = tmp.index[which.max(count[tmp.index])]
+    # setTxtProgressBar(pb, i)
   }
 
-  pro_data$clonotype_index <- c(1:clonotype_n)
-  pro_data$sequence_id <- clonotype_sequence_id
-  pro_data$clonotype_count <- clonotype_counts
-  pro_data$clonotype_fre <- clonotype_counts/sum(clonotype_counts)
-  if(any(colnames(pro_data) %in% "junction")) pro_data$junction <- clonotype_junction
-  if(any(colnames(pro_data) %in% "c_call")) pro_data$c_call <- clonotype_c_call
-
-  pro_data <- dplyr::select(pro_data, clonotype_index, sequence_id, v_call, j_call,
-                     junction_aa, clonotype_count, clonotype_fre, everything())
+  pro_data <- data.frame(clonotype_index = c(1:clonotype_n), clonotype_count, clone_count,
+                         clone_fre = clone_count/sum(clone_count), orign_index = max_freq_index,
+                         productive_data[max_freq_index,], index_match)
+  rownames(pro_data) = 1:nrow(pro_data)
 
   return(pro_data)
 }
@@ -169,3 +157,7 @@ data.preprocess <- function(data_list, count_col_name = NA) {
 
   return(pro_data_list)
 }
+set <- c('a','a','b','c','d','a','c','b','a','c')
+set <- data.frame(index= 1:length(set), num=set)
+index.match = data.frame(orign.index = set$index, new.index = as.numeric(factor(set$num)))
+index.match$orign.index[which(index.match$new.index == 1)]
