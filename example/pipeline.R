@@ -20,14 +20,16 @@ HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "cs
 ## 2. Data preprocessing
 # Preprocessing of raw data to meet the input requirements for clonal family inference.
 # The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
-# "junction" and "c_call" are optional if you want to plot the evolutionary tree or need isotypes related (SHM/CSR) analysis.
+# "junction" and "c_call" are optional if you want to plot the evolutionary tree or need isotype related (SHM/CSR) analysis.
 # Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
 # The "count_col_name" parameter represents the column name for the count of each sequence which can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
 # It defaults to "NA" which means the original count of the sequence is not taken into account.
 # Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
-# In each row of processed data, "sequence_id" is the "sequence_id" of sequences with the same clonotype separated by ";".
-# "clonotype_count" and "clonotype_fre" is the count and frequency of the clonotype calculated based on "count_col_name" parameter.
-# If "junction" ("c_call") is contained in the raw data, it is replaced by the most frequently occurring "junction" ("c_call") in the clonotype.
+# The column "clonotype_count" is the count of each clonotype.
+# The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
+# The column "clone_fre" is the frequency version of "clone_count".
+# The information of the sequence with the highest count in each clonotype is retained.
+# The list "index_match" saves the original indexes of sequences for each clonotype.
 COVID_pro_data_list <- data.preprocess(data_list = COVID_raw_data_list, count_col_name = "consensus_count")
 HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list, count_col_name = "consensus_count")
 
@@ -40,7 +42,7 @@ HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list, count_col_name
 # The "consensus_thre" parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
 # A higher "consensus_thre" means stricter inference of the cluster.
 COVID_clusters_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
-HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
+HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list[1], cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
 
 ## 4. Classification of clustered and unclustered sequences
 # Merge all the clustered sequences in each sample into "clustered_seqs".
