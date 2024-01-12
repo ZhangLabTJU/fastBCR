@@ -22,7 +22,7 @@ Processed data as input for clonal family inference
 The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
 Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
 Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
-In each row of processed data, "sequence_id" is the "sequence_id" of sequences with the same clonotype separated by ";".
-"clonotype_count" and "clonotype_fre" is the count and frequency of the clonotype calculated based on "count_col_name" parameter.
-If "junction" ("c_call") is contained in the raw data, it is replaced by the most frequently occurring "junction" ("c_call") in the clonotype.
+The column "clonotype_count" is the count of each clonotype.
+The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
+The column "clone_fre" is the frequency version of "clone_count".
 }
