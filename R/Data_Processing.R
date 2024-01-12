@@ -68,7 +68,7 @@ data.pro <- function(raw_data, count_col_name = NA) {
   # check if the raw_data meet the requirements on column names
   required_col_names <- c("sequence_id", "v_call", "j_call", "junction_aa")
   if(all(required_col_names %in% colnames(raw_data)) == FALSE){
-    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please XXX")
+    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please check the format of the input data or change your data column name to meet the requirements.")
   }
 
   # junction length filtering
