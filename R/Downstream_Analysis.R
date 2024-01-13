@@ -1620,13 +1620,13 @@ NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = 
 
   # Intra-join clusters and dfs to match exactly according to v_call and j_call
   join <- inner_join(clusters_df, AbDab, by = c("v_call", "j_call"), relationship = "many-to-many")
-  colnames(join)[c((ncol(clusters_df)+1):ncol(join))] = paste0("NAb_", colnames(join)[c((ncol(clusters_df)+1):ncol(join))])
-  colnames(join)[which(colnames(join) == "CDRH3.x")] = "CDRH3"
-  colnames(join)[which(colnames(join) == "NAb_CDRH3.y")] = "NAb_CDRH3"
+  colnames(join)[c((ncol(clusters_df) + 1):ncol(join))] <- paste0("NAb_", colnames(join)[c((ncol(clusters_df) + 1):ncol(join))])
+  colnames(join)[which(colnames(join) == "CDRH3.x")] <- "CDRH3"
+  colnames(join)[which(colnames(join) == "NAb_CDRH3.y")] <- "NAb_CDRH3"
 
   if (!is.na(method) && !is.na(maxDist)) {
     result <- join %>%
-      filter(stringdist::stringdist(trim(CDRH3), trim(NAb_CDRH3), method = method) <= maxDist - 1 )
+      filter(stringdist::stringdist(trim(CDRH3), trim(NAb_CDRH3), method = method) <= maxDist - 1)
   } else {
     # Exact matching when neither method nor maxDist is given
     result <- join %>%

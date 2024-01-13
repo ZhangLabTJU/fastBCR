@@ -67,8 +67,8 @@ data.load <- function(folder_path, storage_format) {
 data.pro <- function(raw_data, count_col_name = NA) {
   # check if the raw_data meet the requirements on column names
   required_col_names <- c("sequence_id", "v_call", "j_call", "junction_aa")
-  if(all(required_col_names %in% colnames(raw_data)) == FALSE){
-    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please check the format of the input data or change your data column name to meet the requirements.")
+  if (all(required_col_names %in% colnames(raw_data)) == FALSE) {
+    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please check the format of the input data or change the column name to meet the requirements.")
   }
 
   # junction length filtering
@@ -98,9 +98,9 @@ data.pro <- function(raw_data, count_col_name = NA) {
 
   # clonotype (v-j-junction_aa) deduplicate
   junction_aa <- productive_data$junction_aa
-  if(!is.na(count_col_name)){
-    count <- productive_data[,count_col_name]
-  }else{
+  if (!is.na(count_col_name)) {
+    count <- productive_data[, count_col_name]
+  } else {
     count <- rep(1, nrow(productive_data))
   }
   v_j_junction_aa <- paste(v_call, j_call, junction_aa)
@@ -108,29 +108,33 @@ data.pro <- function(raw_data, count_col_name = NA) {
   pro_data <- productive_data[!duplicated(v_j_junction_aa), ]
 
   # clonotype backtrack
-  index_match <- data.frame(clonotype_index = as.numeric(v_j_junction_aa),
-                            orign_index = 1:length(v_j_junction_aa))
-  index_match <- I(split(index_match[,2], list(index_match$clonotype_index), drop = TRUE))
+  index_match <- data.frame(
+    clonotype_index = as.numeric(v_j_junction_aa),
+    orign_index = 1:length(v_j_junction_aa)
+  )
+  index_match <- I(split(index_match[, 2], list(index_match$clonotype_index), drop = TRUE))
   clonotype_n <- length(unique(v_j_junction_aa))
-  clone_count = rep(0, clonotype_n)
-  clonotype_count = rep(0, clonotype_n)
-  max_freq_index  = rep(0, clonotype_n)
+  clone_count <- rep(0, clonotype_n)
+  clonotype_count <- rep(0, clonotype_n)
+  max_freq_index <- rep(0, clonotype_n)
 
   # pb <- utils::txtProgressBar(min = 0, max = clonotype_n, style = 3)
-  for(i in 1:clonotype_n){
+  for (i in 1:clonotype_n) {
     tmp.index <- index_match[[i]]
     tmp.clone_count <- sum(count[tmp.index])
     tmp.clonotype_count <- length(tmp.index)
-    clone_count[i] = tmp.clone_count
-    clonotype_count[i] = tmp.clonotype_count
-    max_freq_index[i] = tmp.index[which.max(count[tmp.index])]
+    clone_count[i] <- tmp.clone_count
+    clonotype_count[i] <- tmp.clonotype_count
+    max_freq_index[i] <- tmp.index[which.max(count[tmp.index])]
     # setTxtProgressBar(pb, i)
   }
 
-  pro_data <- data.frame(clonotype_index = c(1:clonotype_n), clonotype_count, clone_count,
-                         clone_fre = clone_count/sum(clone_count), orign_index = max_freq_index,
-                         productive_data[max_freq_index,], index_match)
-  rownames(pro_data) = 1:nrow(pro_data)
+  pro_data <- data.frame(
+    clonotype_index = c(1:clonotype_n), clonotype_count, clone_count,
+    clone_fre = clone_count / sum(clone_count), orign_index = max_freq_index,
+    productive_data[max_freq_index, ], index_match
+  )
+  rownames(pro_data) <- 1:nrow(pro_data)
 
   return(pro_data)
 }
@@ -157,7 +161,7 @@ data.preprocess <- function(data_list, count_col_name = NA) {
 
   return(pro_data_list)
 }
-set <- c('a','a','b','c','d','a','c','b','a','c')
-set <- data.frame(index= 1:length(set), num=set)
-index.match = data.frame(orign.index = set$index, new.index = as.numeric(factor(set$num)))
+set <- c("a", "a", "b", "c", "d", "a", "c", "b", "a", "c")
+set <- data.frame(index = 1:length(set), num = set)
+index.match <- data.frame(orign.index = set$index, new.index = as.numeric(factor(set$num)))
 index.match$orign.index[which(index.match$new.index == 1)]
