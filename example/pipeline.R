@@ -25,7 +25,7 @@ HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "cs
 # The "count_col_name" parameter represents the column name for the count of each sequence which can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
 # It defaults to "NA" which means the original count of the sequence is not taken into account.
 # Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
-# The column "clonotype_count" is the count of each clonotype.
+# The column "clonotype_count" is the number of sequences belonging to each clonotype.
 # The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
 # The column "clone_fre" is the frequency version of "clone_count".
 # The information of the sequence with the highest count in each clonotype is retained.
@@ -42,7 +42,7 @@ HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list, count_col_name
 # The "consensus_thre" parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
 # A higher "consensus_thre" means stricter inference of the cluster.
 COVID_clusters_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
-HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list[1], cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
+HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
 
 ## 4. Classification of clustered and unclustered sequences
 # Merge all the clustered sequences in each sample into "clustered_seqs".
@@ -191,7 +191,7 @@ mouse_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_A
 human_hamming_1_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = "hamming", maxDist = 1, species = "Human")
 
 
-## 3. Inter group analysis
+## 3. Differential analysis between groups
 ## 3.1 V/J gene usage
 ## 3.1.1 Boxplot: V/J gene
 # Boxplot showing the V/J gene usage of the clustered sequences between two groups.
