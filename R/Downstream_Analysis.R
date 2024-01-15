@@ -645,8 +645,8 @@ len.clustered.plot <- function(clustered_seqs, unclustered_seqs) {
   }
   ggplot(df, aes(x = value, y = group, color = group, fill = group)) +
     ggridges::geom_density_ridges(aes(color = group, fill = group),
-      quantile_lines = TRUE, size = 1.5, alpha = 0.75,
-      vline_linetype = "dashed", quantiles = 1.5, bandwidth = 3
+      quantile_lines = TRUE, linewidth = 1.5, alpha = 0.75,
+      vline_linetype = "dashed", quantiles = 1.5, bandwidth = 1
     ) +
     labs(x = "Length", y = "") +
     theme_bw() +
@@ -665,8 +665,6 @@ len.clustered.plot <- function(clustered_seqs, unclustered_seqs) {
     scale_fill_manual(values = c("#CCCC33", "#99FF99")) +
     scale_color_manual(values = c("#999900", "#66CC66")) +
 
-    # scale_fill_manual(values = c( "#CC9966", "#99CCFF")) +
-    # scale_color_manual(values = c("#CC6633", "#006699")) +
     scale_x_continuous(
       limits = c(5, 30),
       breaks = c(5, 10, 15, 20, 25, 30)
@@ -712,13 +710,9 @@ len.group.plot <- function(group1_all_clustered_seqs, group1_label,
     }
   }
   ggplot(df, aes(x = value, y = group, color = group, fill = group)) +
-    # ggridges::geom_density_ridges(aes(color = group),
-    #   fill = "transparent", quantile_lines = TRUE, size = 2,
-    #   vline_linetype = "dashed", quantiles = 2, bandwidth = 2
-    # ) +
     ggridges::geom_density_ridges(aes(color = group, fill = group),
-      quantile_lines = TRUE, size = 1.5, alpha = 0.75,
-      vline_linetype = "dashed", quantiles = 1.5, bandwidth = 3
+      quantile_lines = TRUE, linewidth = 1.5, alpha = 0.75,
+      vline_linetype = "dashed", quantiles = 1.5, bandwidth = 1
     ) +
     labs(x = "Length", y = "") +
     theme_bw() +
