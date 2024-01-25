@@ -4,14 +4,25 @@
 \alias{SHM.calculation}
 \title{Function: Calculate the average SHM ratio of all clusters and the SHM ratios of clustered sequences in four isotypes in each sample}
 \usage{
-SHM.calculation(clusters_list1, group1_label, clusters_list2, group2_label)
+SHM.calculation(
+  clusters_list1,
+  raw_data_list1,
+  group1_label,
+  clusters_list2,
+  raw_data_list2,
+  group2_label
+)
 }
 \arguments{
 \item{clusters_list1}{A list where each element of the list is the clonal families inferred by fastBCR for each sample in group1}
 
+\item{raw_data_list1}{A list where each element is the raw data named after its filename in group1}
+
 \item{group1_label}{Label of group1}
 
 \item{clusters_list2}{A list where each element of the list is the clonal families inferred by fastBCR for each sample in group2}
+
+\item{raw_data_list2}{A list where each element is the raw data named after its filename in group2}
 
 \item{group2_label}{Label of group2}
 }

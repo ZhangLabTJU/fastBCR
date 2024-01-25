@@ -4,14 +4,16 @@
 \alias{clonal.tree.generation}
 \title{Function: Reconstructing a B cell lineage tree with minimum spanning tree and genotype abundances using ClonalTree}
 \usage{
-clonal.tree.generation(bcr_clusters, index, python_path)
+clonal.tree.generation(bcr_clusters, index, raw_data, python_path)
 }
 \arguments{
 \item{bcr_clusters}{Clonal families inferred by fastBCR}
 
 \item{index}{Index of cluster}
 
-\item{python_path}{The absolute path of the Python interpreter}
+\item{python_path}{The absolute path of the Python interpreter
+#' @param raw_data The raw data which the clonal families inferred from
+fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data}
 }
 \value{
 ClonalTree returns two files in the 'ClonalTree/Examples/output' folder

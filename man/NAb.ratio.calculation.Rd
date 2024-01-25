@@ -11,7 +11,10 @@ NAb.ratio.calculation(
   pro_data_list2,
   clusters_list2,
   group2_label,
-  NAb_vjcdr3
+  AbDab,
+  method = NA,
+  maxDist = NA,
+  species = "Human"
 )
 }
 \arguments{

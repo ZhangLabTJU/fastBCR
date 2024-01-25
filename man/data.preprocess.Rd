@@ -10,7 +10,6 @@ data.preprocess(data_list, count_col_name = NA)
 \item{data_list}{A list where each element is the raw data named after its filename}
 
 \item{count_col_name}{The column name for the count of each sequence.
-It can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
 Defaults to "NA" which means the original count of the sequence is not taken into account.}
 }
 \value{

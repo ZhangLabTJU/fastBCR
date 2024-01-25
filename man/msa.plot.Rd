@@ -4,7 +4,7 @@
 \alias{msa.plot}
 \title{Plot: Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster}
 \usage{
-msa.plot(bcr_clusters, index, type = c("AA", "DNA"))
+msa.plot(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA)
 }
 \arguments{
 \item{bcr_clusters}{clonal families inferred by fastBCR}
@@ -12,6 +12,10 @@ msa.plot(bcr_clusters, index, type = c("AA", "DNA"))
 \item{index}{Index of cluster}
 
 \item{type}{'DNA' for deoxyribonucleic acid or 'AA' for amino acid}
+
+\item{raw_data}{The raw data which the clonal families inferred from
+It is needed if you want to plot the MSA of 'DNA' sequences.
+fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data}
 }
 \value{
 Visualization of MSA. From top to bottom are title('Vgene_Jgene_Length'), seqlogo, ggmsa, and msabar

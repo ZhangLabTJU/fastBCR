@@ -4,7 +4,7 @@
 \alias{seqlogo.plot}
 \title{Plot: Visualization of sequence logo of junction sequences within a cluster}
 \usage{
-seqlogo.plot(bcr_clusters, index, type = c("AA", "DNA"))
+seqlogo.plot(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA)
 }
 \arguments{
 \item{bcr_clusters}{Clonal families inferred by fastBCR}
@@ -12,6 +12,10 @@ seqlogo.plot(bcr_clusters, index, type = c("AA", "DNA"))
 \item{index}{Index of cluster}
 
 \item{type}{'DNA' or 'AA'}
+
+\item{raw_data}{The raw data which the clonal families inferred from
+It is needed if you want to plot the sequence logo of 'DNA' sequences.
+fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data}
 }
 \value{
 Sequence logo
