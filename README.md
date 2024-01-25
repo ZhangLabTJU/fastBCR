@@ -70,7 +70,7 @@ incorporates multiple functional modules for downstream analyses.
 fastBCR is composed of two parts: **BCR clonal family inference**, and
 **Downstream analysis**.
 
-You can follow the **'pipeline.R'** 
+You can follow the **'fastBCR_pipeline.Rmd'** 
 in **'/example'** folder to run the pipeline example. 
 
 <div align=center>
