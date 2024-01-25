@@ -43,58 +43,41 @@ data.load <- function(folder_path, storage_format) {
     setTxtProgressBar(pb, i)
   }
 
+  cat(paste0(
+    paste0("\nYou have loaded ", length(data_list), " samples\n"),
+    paste(paste0("Sample '", names(data_list), "' contains ", sapply(data_list, function(x) nrow(x)), " sequences"), collapse = "\n")
+  ))
+
   return(data_list)
 }
 
 #' @title Function: The first step of fastBCR to process raw data.
 #'
-#' @description The input of the function needs to meet the AIRR standard format (containing at least "sequence_id", "v_call", "j_call", and "junction_aa" information).
+#' @description The input data needs to contain essential columns including "v_call" (V gene with or without allele), "j_call" (J gene with or without allele) and "junction_aa" (amino acid translation of the junction).
 #' Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
 #' Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
 #' The column "clonotype_count" is the count of each clonotype.
 #' The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
 #' The column "clone_fre" is the frequency version of "clone_count".
 #'
-#' @param raw_data AIRR format data.
-#' Inference of clonal familes requires following columns to be present in the raw_data: "sequence_id", "v_call", "j_call", "junction_aa".
-#' "junction" or "c_call" are optional if you want to plot the evolutionary tree or need isotypes related (SHM/CSR) analysis.
+#' @param raw_data Raw data for preprocessed.
+#' Inference of clonal familes requires following columns to be present in the raw_data: "v_call" (V gene with or without allele), "j_call" (J gene with or without allele) and "junction_aa" (amino acid translation of the junction).
+#' The "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons) column is needed for phylogenetic tree construction and SHM-related analysis
+#' The "c_call" (constant region gene with or without allele) column is needed for isotype-related analysis.
 #' @param count_col_name The column name for the count of each sequence.
-#'  It can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
 #'  Defaults to "NA" which means the original count of the sequence is not taken into account.
 #'
 #' @return Processed data as input for clonal family inference
 #' @export
 data.pro <- function(raw_data, count_col_name = NA) {
   # check if the raw_data meet the requirements on column names
-  required_col_names <- c("sequence_id", "v_call", "j_call", "junction_aa")
+  required_col_names <- c("v_call", "j_call", "junction_aa")
   if (all(required_col_names %in% colnames(raw_data)) == FALSE) {
-    stop("The required column names ('sequence_id', 'v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please check the format of the input data or change the column name to meet the requirements.")
+    stop("The required column names ('v_call', 'j_call', 'junction_aa') must be present in the raw_data. Please check the format of the input data or change the column name to meet the requirements.")
   }
 
-  # junction length filtering
-  raw_data <- dplyr::filter(raw_data, nchar(junction_aa) >= 9 & nchar(junction_aa) <= 26)
-
-  # productive only
-  junction_aa <- raw_data$junction_aa
-  star <- grep("\\*", junction_aa)
-  underline <- grep("_", junction_aa)
-  X <- grep("X", junction_aa)
-  v_call_na <- which(is.na(raw_data$v_call))
-  j_call_na <- which(is.na(raw_data$j_call))
-  rm <- unique(c(star, underline, X, v_call_na, j_call_na))
-  if (length(rm) != 0) {
-    productive_data <- raw_data[-rm, ]
-  } else {
-    productive_data <- raw_data
-  }
-
-  # V/J gene without allele
-  v_call <- strsplit(productive_data$v_call, "\\*")
-  v_call <- sapply(v_call, function(x) x[1])
-  j_call <- strsplit(productive_data$j_call, "\\*")
-  j_call <- sapply(j_call, function(x) x[1])
-  productive_data$v_call <- v_call
-  productive_data$j_call <- j_call
+  # get productive data with appropriate length
+  productive_data <- data.productive(raw_data)
 
   # clonotype (v-j-junction_aa) deduplicate
   junction_aa <- productive_data$junction_aa
@@ -118,7 +101,6 @@ data.pro <- function(raw_data, count_col_name = NA) {
   clonotype_count <- rep(0, clonotype_n)
   max_freq_index <- rep(0, clonotype_n)
 
-  # pb <- utils::txtProgressBar(min = 0, max = clonotype_n, style = 3)
   for (i in 1:clonotype_n) {
     tmp.index <- index_match[[i]]
     tmp.clone_count <- sum(count[tmp.index])
@@ -126,7 +108,6 @@ data.pro <- function(raw_data, count_col_name = NA) {
     clone_count[i] <- tmp.clone_count
     clonotype_count[i] <- tmp.clonotype_count
     max_freq_index[i] <- tmp.index[which.max(count[tmp.index])]
-    # setTxtProgressBar(pb, i)
   }
 
   pro_data <- data.frame(
@@ -139,11 +120,38 @@ data.pro <- function(raw_data, count_col_name = NA) {
   return(pro_data)
 }
 
+data.productive <- function(raw_data){
+  # filter sequences with appropriate length
+  productive_data <- dplyr::filter(raw_data, !is.na(v_call) & !is.na(j_call) & !is.na(junction_aa)) %>% # filter sequences without 'v_call', 'j_call' or 'junction_aa' entry
+    dplyr::filter(nchar(junction_aa) >= 9 & nchar(junction_aa) <= 26) # junction length filtering
+
+  # productive only
+  junction_aa <- productive_data$junction_aa
+  star <- grep("\\*", junction_aa)
+  underline <- grep("_", junction_aa)
+  X <- grep("X", junction_aa)
+  rm <- unique(c(star, underline, X))
+  if (length(rm) != 0) {
+    productive_data <- productive_data[-rm, ]
+  } else {
+    productive_data <- productive_data
+  }
+
+  # V/J gene without allele
+  v_call <- strsplit(productive_data$v_call, "\\*")
+  v_call <- sapply(v_call, function(x) x[1])
+  j_call <- strsplit(productive_data$j_call, "\\*")
+  j_call <- sapply(j_call, function(x) x[1])
+  productive_data$v_call <- v_call
+  productive_data$j_call <- j_call
+
+  return(productive_data)
+}
+
 #' Function: Preprocessing of raw data to meet the input requirements for clonal family inference
 #'
 #' @param data_list A list where each element is the raw data named after its filename
 #' @param count_col_name The column name for the count of each sequence.
-#'  It can be "consensus_count", "duplicate_count" or "umi_count" according to your needs.
 #'  Defaults to "NA" which means the original count of the sequence is not taken into account.
 #'
 #' @return A list where each element is the processed data named after its filename
@@ -159,9 +167,10 @@ data.preprocess <- function(data_list, count_col_name = NA) {
     setTxtProgressBar(pb, i)
   }
 
+  cat(paste0(
+    paste0("\nYou have preprocessed ", length(pro_data_list), " samples\n"),
+    paste(paste0("Sample '", names(pro_data_list), "' contains ", sapply(pro_data_list, function(x) nrow(x)), " unique clonotypes"), collapse = "\n")
+  ))
+
   return(pro_data_list)
 }
-set <- c("a", "a", "b", "c", "d", "a", "c", "b", "a", "c")
-set <- data.frame(index = 1:length(set), num = set)
-index.match <- data.frame(orign.index = set$index, new.index = as.numeric(factor(set$num)))
-index.match$orign.index[which(index.match$new.index == 1)]

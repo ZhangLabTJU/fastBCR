@@ -1,5 +1,5 @@
 Sort_clu <- function(clu) {
-  len.lis <- sapply(clu, function(x) length((x$sequence_id)))
+  len.lis <- sapply(clu, function(x) length((x$clonotype_index)))
   index <- order(len.lis, decreasing = T)
   sort <- vector("list", length = length(index))
   sort[c(seq_along(index))] <- clu[index]
@@ -148,7 +148,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
       }
 
       k_mer.lis <- c(k_mer1, k_mer2, k_mer3, k_mer4, k_mer5, k_mer6)
-      id <- rep(tmp.seqs$sequence_id, times = 6)
+      index <- rep(tmp.seqs$clonotype_index, times = 6)
       k_mer.fre <- sort(table(k_mer.lis), decreasing = T)
       kk <- which(as.numeric(k_mer.fre) >= cluster_thre)
       k_mer.clu <- names(k_mer.fre)[kk]
@@ -158,10 +158,10 @@ BCR.cluster <- function(input, cluster_thre = 3,
       }
 
       for (mm in k_mer.clu) {
-        id.loc <- which(k_mer.lis == mm)
-        ids <- id[id.loc]
-        ids <- unique(ids)
-        tmp.loc <- which(tmp.seqs$sequence_id %in% ids)
+        index.loc <- which(k_mer.lis == mm)
+        indexs <- index[index.loc]
+        indexs <- unique(indexs)
+        tmp.loc <- which(tmp.seqs$clonotype_index %in% indexs)
         if (length(tmp.loc) < cluster_thre) {
           next
         }
@@ -248,7 +248,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
             for (l in 2:length(clu.loc)) {
               filt.clu <- rbind(filt.clu, pre_clusters[[clu.loc[l]]])
             }
-            filt.clu <- filt.clu[!duplicated(filt.clu$sequence_id), ]
+            filt.clu <- filt.clu[!duplicated(filt.clu$clonotype_index), ]
           } else {
             filt.clu <- pre_clusters[[clu.loc]]
           }
@@ -262,12 +262,12 @@ BCR.cluster <- function(input, cluster_thre = 3,
     ### Optimized clustering
     # Further combine pre-clusters
     sort_clusters <- Sort_clu(filt_clusters)
-    clu.ids <- lapply(sort_clusters, function(x) x$sequence_id)
+    clu.indexs <- lapply(sort_clusters, function(x) x$clonotype_index)
     df <- data.frame(
-      index = 1:length(clu.ids),
-      ids = I(clu.ids)
+      index = 1:length(clu.indexs),
+      indexs = I(clu.indexs)
     )
-    df <- dplyr::distinct(df, ids, .keep_all = T)
+    df <- dplyr::distinct(df, indexs, .keep_all = T)
     clu.index <- df$index
     sort_clusters <- sort_clusters[clu.index]
 
@@ -279,7 +279,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
     clu_info <- vector(mode = "list", length = cc)
     for (i in 1:cc) {
       clu_info[[i]] <- list(
-        Id = sort_clusters[[i]]$sequence_id,
+        Id = sort_clusters[[i]]$clonotype_index,
         len = unique(sort_clusters[[i]]$len),
         index = i
       )
@@ -340,7 +340,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
             tmp <- as.data.frame(tmp)
             com.clu <- rbind(com.clu, tmp)
           }
-          com.clu <- com.clu[!duplicated(com.clu$sequence_id), ]
+          com.clu <- com.clu[!duplicated(com.clu$clonotype_index), ]
         }
         bcr_clusters <- c(bcr_clusters, list(com.clu))
         dd <- dd + 1
@@ -357,7 +357,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
             tmp <- as.data.frame(tmp)
             com.clu <- rbind(com.clu, tmp)
           }
-          com.clu <- com.clu[!duplicated(com.clu$sequence_id), ]
+          com.clu <- com.clu[!duplicated(com.clu$clonotype_index), ]
         }
         bcr_clusters <- c(bcr_clusters, list(com.clu))
         break
@@ -401,6 +401,12 @@ data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.
     BCR_clusters_list[[var_name]] <- processed_data
     setTxtProgressBar(pb, i)
   }
+
+  cat(paste0(
+    paste0("\nYou have clustered ", length(BCR_clusters_list), " samples\n"),
+    paste(paste0("Sample '", names(BCR_clusters_list), "' contains ", sapply(BCR_clusters_list, function(x) length(x)), " clonal families"), collapse = "\n")
+  ))
+
 
   return(BCR_clusters_list)
 }

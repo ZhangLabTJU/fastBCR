@@ -15,18 +15,27 @@ Clustered.seqs <- function(pro_data_list, clusters_list) {
     var_name <- names(clusters_list[i])
     pro_data <- pro_data_list[[i]]
     clusters <- clusters_list[[i]]
-    tmp.clustered_seqs <- clu2df(clusters)
-    clustered_id <- tmp.clustered_seqs$sequence_id
-    all_id <- pro_data$sequence_id
-    tmp.unclustered_seqs <- pro_data[-which(all_id %in% clustered_id), ]
-    clustered_seqs_sample[[var_name]] <- tmp.clustered_seqs
-    unclustered_seqs_sample[[var_name]] <- tmp.unclustered_seqs
+    clustered_index <- unique(unlist(sapply(clusters, function(x) x$clonotype_index)))
+    clustered_seqs <- pro_data[clustered_index, ]
+    all_index <- pro_data$clonotype_index
+    unclustered_seqs <- pro_data[-clustered_index, ]
+    clustered_seqs_sample[[var_name]] <- clustered_seqs
+    unclustered_seqs_sample[[var_name]] <- unclustered_seqs
     setTxtProgressBar(pb, i)
   }
   clustered_seqs <- list(
     clustered_seqs = clustered_seqs_sample,
     unclustered_seqs = unclustered_seqs_sample
   )
+
+  cat(paste0(
+    paste0("\nYou have classified clustered and unclustered sequences for ", length(pro_data_list), " samples\n"),
+    paste(paste0(
+      "Sample '", names(pro_data_list), "' contains ",
+      sapply(clustered_seqs$clustered_seqs, function(x) nrow(x)), " clustered sequences and ",
+      sapply(clustered_seqs$unclustered_seqs, function(x) nrow(x)), " unclustered sequences"
+    ), collapse = "\n")
+  ))
 
   return(clustered_seqs)
 }
@@ -44,7 +53,7 @@ Clusters.summary <- function(pro_data_list, clusters_list) {
     pro_data <- pro_data_list[[i]]
     pro_data_n <- nrow(pro_data)
     cluster_data <- clusters_list[[i]]
-    clustered_data <- unique(unlist(sapply(cluster_data, function(x) x$sequence_id)))
+    clustered_data <- unique(unlist(sapply(cluster_data, function(x) x$clonotype_index)))
     clustered_data_n <- length(clustered_data)
     var_name <- names(pro_data_list[i])
     cluster_size <- sapply(cluster_data, function(x) nrow(x))
@@ -664,7 +673,6 @@ len.clustered.plot <- function(clustered_seqs, unclustered_seqs) {
     ) +
     scale_fill_manual(values = c("#CCCC33", "#99FF99")) +
     scale_color_manual(values = c("#999900", "#66CC66")) +
-
     scale_x_continuous(
       limits = c(5, 30),
       breaks = c(5, 10, 15, 20, 25, 30)
@@ -744,7 +752,7 @@ len.group.plot <- function(group1_all_clustered_seqs, group1_label,
 }
 
 name <- function(bcr_clusters, index, loc) {
-  id <- bcr_clusters[[index]][["sequence_id"]]
+  id <- bcr_clusters[[index]]$clonotype_index
   id <- id[loc]
   nn <- length(id)
   names <- c()
@@ -797,19 +805,26 @@ sort.msa <- function(seqs, seqs0) {
 #' @param bcr_clusters clonal families inferred by fastBCR
 #' @param index Index of cluster
 #' @param type 'DNA' for deoxyribonucleic acid or 'AA' for amino acid
+#' @param raw_data The raw data which the clonal families inferred from
+#' It is needed if you want to plot the MSA of 'DNA' sequences.
+#' fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data
 #'
 #' @return Visualization of MSA. From top to bottom are title('Vgene_Jgene_Length'), seqlogo, ggmsa, and msabar
 #' @export
-msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
+msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA) {
   if (type == "AA") {
-    seqs_aa0 <- bcr_clusters[[index]][["junction_aa"]]
+    seqs_aa0 <- bcr_clusters[[index]]$junction_aa
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
     sink()
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
   } else if (type == "DNA") {
-    seqs_aa0 <- bcr_clusters[[index]][["junction"]]
+    index_match <- bcr_clusters[[index]]$index_match
+    names(index_match) <- NULL
+    raw_index <- unlist(index_match)
+    productive_data <- data.productive(raw_data)
+    seqs_aa0 <- unique(productive_data$junction[raw_index])
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::DNAStringSet(seqs_aa0), "ClustalW")
     sink()
@@ -820,8 +835,8 @@ msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
   seqs_aa_no <- gsub("-", "", seqs_aa)
   loc <- sort.msa(seqs_aa_no, seqs_aa0)
   SEQs_aa@ranges@NAMES <- name(bcr_clusters, index, loc)
-  v_call <- unique(bcr_clusters[[index]][["v_call"]])
-  j_call <- unique(bcr_clusters[[index]][["j_call"]])
+  v_call <- unique(bcr_clusters[[index]]$v_call)
+  j_call <- unique(bcr_clusters[[index]]$j_call)
   len <- unique(nchar(seqs_aa))
   vjlen <- paste(paste(v_call, collapse = ","), "_", paste(j_call, collapse = ","), "_Length:", len, sep = "")
   clu.title <- vjlen
@@ -844,19 +859,26 @@ msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
 #' @param bcr_clusters Clonal families inferred by fastBCR
 #' @param index Index of cluster
 #' @param type 'DNA' or 'AA'
+#' @param raw_data The raw data which the clonal families inferred from
+#' It is needed if you want to plot the sequence logo of 'DNA' sequences.
+#' fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data
 #'
 #' @return Sequence logo
 #' @export
-seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
+seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA) {
   if (type == "AA") {
-    seqs_aa0 <- bcr_clusters[[index]][["junction_aa"]]
+    seqs_aa0 <- bcr_clusters[[index]]$junction_aa
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
     sink()
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
   } else if (type == "DNA") {
-    seqs_aa0 <- bcr_clusters[[index]][["junction"]]
+    index_match <- bcr_clusters[[index]]$index_match
+    names(index_match) <- NULL
+    raw_index <- unlist(index_match)
+    productive_data <- data.productive(raw_data)
+    seqs_aa0 <- unique(productive_data$junction[raw_index])
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::DNAStringSet(seqs_aa0), "ClustalW")
     sink()
@@ -867,8 +889,8 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
   seqs_aa_no <- gsub("-", "", seqs_aa)
   loc <- sort.msa(seqs_aa_no, seqs_aa0)
   SEQs_aa@ranges@NAMES <- name(bcr_clusters, index, loc)
-  v_call <- unique(bcr_clusters[[index]][["v_call"]])
-  j_call <- unique(bcr_clusters[[index]][["j_call"]])
+  v_call <- unique(bcr_clusters[[index]]$v_call)
+  j_call <- unique(bcr_clusters[[index]]$j_call)
   len <- unique(nchar(seqs_aa))
   vjlen <- paste(paste(v_call, collapse = ","), "_", paste(j_call, collapse = ","), "_Length:", len, sep = "")
   clu.title <- vjlen
@@ -899,19 +921,26 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA")) {
 #' @param bcr_clusters Clonal families inferred by fastBCR
 #' @param index Index of cluster
 #' @param python_path The absolute path of the Python interpreter
+#'#' @param raw_data The raw data which the clonal families inferred from
+#' fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data
 #'
 #' @return ClonalTree returns two files in the 'ClonalTree/Examples/output' folder
 #' ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format
 #' ClonalFamily_index.nk.csv: a table in csv format, containing the parent relationship and cost
 #'
 #' @export
-clonal.tree.generation <- function(bcr_clusters, index, python_path) {
-  ids <- bcr_clusters[[index]]$sequence_id
+clonal.tree.generation <- function(bcr_clusters, index, raw_data, python_path) {
+  ids <- bcr_clusters[[index]]$clonotype_index
   l <- nchar(ids)
   if (min(l) > 5) {
     ids <- stringr::str_sub(ids, l - 4, l)
   }
-  seqs <- bcr_clusters[[index]]$junction
+
+  index_match <- bcr_clusters[[index]]$index_match
+  names(index_match) <- NULL
+  raw_index <- unlist(index_match)
+  productive_data <- data.productive(raw_data)
+  seqs <- unique(productive_data$junction[raw_index])
   MSAalign_dna <- msa::msa(Biostrings::DNAStringSet(seqs), "ClustalW")
   seqs_dna <- as.character(attributes(MSAalign_dna)$unmasked)
   splt <- strsplit(seqs_dna, "")
@@ -967,102 +996,52 @@ clonal.tree.plot <- function(nk_path) {
     theme(axis.text = element_text(face = "bold", size = 12, colour = "black"))
 }
 
-#' Function: Merge clustered sequences from all BCR clusters and remove duplicates
-#'
-#' @param bcr_clusters clonal families inferred by fastBCR
-#'
-#' @return clustered sequences from all BCR clusters
-#' @export
-clu2df <- function(bcr_clusters) {
-  ss <- length(bcr_clusters)
-  cluster.data <- bcr_clusters[[1]]
-  if (ss > 1) {
-    for (i in 2:ss) {
-      tmp <- bcr_clusters[[i]]
-      cluster.data <- rbind(cluster.data, tmp)
-    }
-  }
-  cluster.data <- cluster.data[!duplicated(cluster.data$sequence_id), ]
-
-  return(cluster.data)
-}
-
-SeqDist <- function(x, y) {
-  if (nchar(x) != nchar(y)) {
-    return(NA)
-  }
-  x.l <- unlist(strsplit(x, ""))
-  y.l <- unlist(strsplit(y, ""))
-  nn1 <- length(which(x.l != y.l))
-  nn2 <- length(which(x.l == "-" & y.l != "-"))
-  nn3 <- length(which(x.l != "-" & y.l == "-"))
-
-  return(nn1 - nn2 - nn3)
-}
-
-SHM.clu <- function(bcr_clusters) {
-  ratio.lis <- c()
-  for (kk in bcr_clusters) {
-    seqs0 <- kk[["junction"]]
-    sink("default matrix.txt")
-    MSAalign <- msa::msa(Biostrings::DNAStringSet(seqs0), "ClustalW")
-    sink()
-    seqs <- as.character(attributes(MSAalign)$unmasked)
-    msa.l <- unique(nchar(seqs))
+SHM.clu <- function(bcr_clusters, raw_data) {
+  n <- length(bcr_clusters)
+  ratio.lis <- rep(0, n)
+  productive_data <- data.productive(raw_data)
+  for (i in 1:n) {
+    index_match <- bcr_clusters[[i]]$index_match
+    names(index_match) <- NULL
+    raw_index <- unlist(index_match)
+    seqs <- unique(productive_data$junction[raw_index])
+    seq.l <- max(nchar(seqs))
     nn <- length(seqs)
-    dist <- matrix(0, nn, nn)
-    clu.l <- msa.l * nn
-    for (ii in 1:nn) {
-      for (jj in ii:nn) {
-        if (jj == ii) {
-          next
-        }
-        tmp.dist <- SeqDist(seqs[ii], seqs[jj])
-        dist[jj, ii] <- dist[jj, ii] + tmp.dist
-      }
-    }
-    dist[dist > 1] <- 0
-    dist.is <- sum(dist)
-    tmp.ratio <- dist.is / clu.l
-    ratio.lis <- c(ratio.lis, tmp.ratio)
+    clu.l <- seq.l * nn
+    pair <- as.data.frame(t(combn(seqs, 2)))
+    dist <- length(which(stringdist::stringdist(pair$V1, pair$V2, method = "lv") == 1))
+    ratio.lis[i] <- dist / clu.l
   }
 
   return(ratio.lis)
 }
 
-SHM.iso <- function(bcr_clusters) {
+SHM.iso <- function(bcr_clusters, raw_data) {
+  n <- length(bcr_clusters)
   isotypes <- c("IGHD", "IGHM", "IGHA", "IGHG")
   all.dist <- rep(0, 4)
   all.len <- rep(0, 4)
-  for (kk in bcr_clusters) {
-    iso <- substr(kk[["c_call"]], 1, 4)
-    seqs0 <- kk[["junction"]]
+  productive_data <- data.productive(raw_data)
+  for (i in 1:n) {
+    bcr_cluster <- bcr_clusters[[i]]
+    iso <- substr(bcr_cluster$c_call, 1, 4)
+    index_match <- bcr_cluster$index_match
+    names(index_match) <- NULL
+    raw_index <- unlist(index_match)
+    seqs <- unique(productive_data$junction[raw_index])
+
     for (is in 1:4) {
       tmp.loc <- which(iso == isotypes[is])
       if (length(tmp.loc) < 2) {
         next
       }
-      tmp.seqs0 <- seqs0[tmp.loc]
-      sink("default matrix.txt")
-      MSAalign <- msa::msa(Biostrings::DNAStringSet(tmp.seqs0), "ClustalW")
-      sink()
-      seqs <- as.character(attributes(MSAalign)$unmasked)
-      msa.l <- unique(nchar(seqs))
-      nn <- length(seqs)
-      clu.l <- msa.l * nn
-      dist <- matrix(0, nn, nn)
-      for (ii in 1:nn) {
-        for (jj in ii:nn) {
-          if (jj == ii) {
-            next
-          }
-          tmp.dist <- SeqDist(seqs[ii], seqs[jj])
-          dist[jj, ii] <- dist[jj, ii] + tmp.dist
-        }
-      }
-      dist[dist > 1] <- 0
-      dist.is <- sum(dist)
-      all.dist[is] <- all.dist[is] + dist.is
+      iso.seqs <- seqs[tmp.loc]
+      seq.l <- max(nchar(iso.seqs))
+      nn <- length(iso.seqs)
+      clu.l <- seq.l * nn
+      pair <- as.data.frame(t(combn(iso.seqs, 2)))
+      dist <- length(which(stringdist::stringdist(pair$V1, pair$V2, method = "lv") == 1))
+      all.dist[is] <- all.dist[is] + dist
       all.len[is] <- all.len[is] + clu.l
     }
   }
@@ -1071,14 +1050,15 @@ SHM.iso <- function(bcr_clusters) {
   return(all.ratio)
 }
 
-SHM.df <- function(clusters_list, group_label) {
+SHM.df <- function(clusters_list, raw_data_list, group_label) {
   average_SHM <- c()
   name <- c()
 
   pb <- utils::txtProgressBar(min = 0, max = length(clusters_list), style = 3)
   for (i in seq_along(clusters_list)) {
     clusters <- clusters_list[[i]]
-    SHM_clu <- SHM.clu(clusters)
+    raw_data <- raw_data_list[[i]]
+    SHM_clu <- SHM.clu(clusters, raw_data)
     SHM <- mean(SHM_clu)
     var_name <- names(clusters_list[i])
     name <- c(name, var_name)
@@ -1095,7 +1075,7 @@ SHM.df <- function(clusters_list, group_label) {
   return(SHM_df)
 }
 
-SHM.iso.df <- function(clusters_list, group_label) {
+SHM.iso.df <- function(clusters_list, raw_data_list, group_label) {
   SHM_iso <- c()
   names <- c()
   isotypes <- c("IGHD", "IGHM", "IGHA", "IGHG")
@@ -1103,7 +1083,8 @@ SHM.iso.df <- function(clusters_list, group_label) {
   pb <- utils::txtProgressBar(min = 0, max = length(clusters_list), style = 3)
   for (i in seq_along(clusters_list)) {
     clusters <- clusters_list[[i]]
-    SHM <- SHM.iso(clusters)
+    raw_data <- raw_data_list[[i]]
+    SHM <- SHM.iso(clusters, raw_data)
     SHM_iso <- c(SHM_iso, SHM)
     var_name <- names(clusters_list[i])
     names <- c(names, paste(var_name, isotypes, sep = "_"))
@@ -1123,18 +1104,20 @@ SHM.iso.df <- function(clusters_list, group_label) {
 #' Function: Calculate the average SHM ratio of all clusters and the SHM ratios of clustered sequences in four isotypes in each sample
 #'
 #' @param clusters_list1 A list where each element of the list is the clonal families inferred by fastBCR for each sample in group1
+#' @param raw_data_list1 A list where each element is the raw data named after its filename in group1
 #' @param group1_label Label of group1
 #' @param clusters_list2 A list where each element of the list is the clonal families inferred by fastBCR for each sample in group2
+#' @param raw_data_list2 A list where each element is the raw data named after its filename in group2
 #' @param group2_label Label of group2
 #'
 #' @return Dataframe containing the average SHM ratio and SHM ratios in four isotypes
 #' @export
-SHM.calculation <- function(clusters_list1, group1_label,
-                            clusters_list2, group2_label) {
+SHM.calculation <- function(clusters_list1, raw_data_list1, group1_label,
+                            clusters_list2, raw_data_list2, group2_label) {
   print("group1 processing:")
-  df1 <- SHM.df(clusters_list1, group1_label)
+  df1 <- SHM.df(clusters_list1, raw_data_list1, group1_label)
   print("group2 processing:")
-  df2 <- SHM.df(clusters_list2, group2_label)
+  df2 <- SHM.df(clusters_list2, raw_data_list2, group2_label)
   SHM_df <- rbind(df1, df2)
 
   return(SHM_df)
@@ -1143,18 +1126,20 @@ SHM.calculation <- function(clusters_list1, group1_label,
 #' Function: Calculate the the SHM ratios of clustered sequences in four isotypes in each sample
 #'
 #' @param clusters_list1 A list where each element of the list is the clonal families inferred by fastBCR for each sample in group1
+#' @param raw_data_list1 A list where each element is the raw data named after its filename in group1
 #' @param group1_label Label of group1
 #' @param clusters_list2 A list where each element of the list is the clonal families inferred by fastBCR for each sample in group2
+#' @param raw_data_list2 A list where each element is the raw data named after its filename in group2
 #' @param group2_label Label of group2
 #'
 #' @return Dataframe containing the SHM ratios in four isotypes
 #' @export
-SHM.iso.calculation <- function(clusters_list1, group1_label,
-                                clusters_list2, group2_label) {
+SHM.iso.calculation <- function(clusters_list1, raw_data_list1, group1_label,
+                                clusters_list2, raw_data_list2, group2_label) {
   print("group1 processing:")
-  df1 <- SHM.iso.df(clusters_list1, group1_label)
+  df1 <- SHM.iso.df(clusters_list1, raw_data_list1, group1_label)
   print("group2 processing:")
-  df2 <- SHM.iso.df(clusters_list2, group2_label)
+  df2 <- SHM.iso.df(clusters_list2, raw_data_list2, group2_label)
   SHM_iso_df <- rbind(df1, df2)
 
   return(SHM_iso_df)
@@ -1261,6 +1246,12 @@ SHM.iso.plot <- function(SHM_iso_df) {
     ) +
     scale_fill_manual(values = c("#FF3333", "#0099CC")) +
     scale_color_manual(values = c("#CC0000", "#336699")) +
+    scale_x_discrete(labels = c(
+      "IGHM", "IGHM",
+      "IGHD", "IGHD",
+      "IGHA", "IGHA",
+      "IGHG", "IGHG"
+    )) +
     coord_cartesian(clip = "off") +
     ggpubr::stat_compare_means(
       comparisons = my_comparisons,
@@ -1303,7 +1294,7 @@ CSR.cluster.plot <- function(bcr_clusters, index) {
   tmp.cw <- matrix(0, 1, ncol = 11)
   colnames(tmp.cw) <- c("Cluster", "IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2", "Unidentified")
   tmp.cw[, "Cluster"] <- index
-  tmp.is <- tmp[["c_call"]]
+  tmp.is <- tmp$c_call
   tmp.is <- fastBCR:::Iso.fst(tmp.is)
   id <- which(tmp.is %in% c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2"))
   if (length(id) > 0) {
@@ -1369,7 +1360,7 @@ CSR.sample.plot <- function(bcr_clusters) {
     tmp.cw <- matrix(0, 1, ncol = 11)
     colnames(tmp.cw) <- c("Cluster", "IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2", "Unidentified")
     tmp.cw[, "Cluster"] <- i
-    tmp.is <- tmp[["c_call"]]
+    tmp.is <- tmp$c_call
     tmp.is <- Iso.fst(tmp.is)
     id <- which(tmp.is %in% c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2"))
     if (length(id) > 0) {
@@ -1419,60 +1410,70 @@ CSR.sample.plot <- function(bcr_clusters) {
     ggtitle(title_name)
 }
 
-findNa <- function(sampledata, NAb_vjcdr3) {
-  NAb_v <- unlist(strsplit(NAb_vjcdr3, " "))[seq(1, 3 * length(NAb_vjcdr3), 3)]
-  NAb_j <- unlist(strsplit(NAb_vjcdr3, " "))[seq(2, 3 * length(NAb_vjcdr3), 3)]
-  NAb_cdr3 <- unlist(strsplit(NAb_vjcdr3, " "))[seq(3, 3 * length(NAb_vjcdr3), 3)]
+NAb.seq.query <- function(pro_data, AbDab, method, maxDist) {
+  join <- inner_join(pro_data, AbDab, by = c("v_call", "j_call"), relationship = "many-to-many")
+  colnames(join)[c((ncol(pro_data) + 1):ncol(join))] <- paste0("NAb_", colnames(join)[c((ncol(pro_data) + 1):ncol(join))])
+  colnames(join)[which(colnames(join) == "CDRH3.x")] <- "CDRH3"
+  colnames(join)[which(colnames(join) == "NAb_CDRH3.y")] <- "NAb_CDRH3"
 
-  nn <- nrow(sampledata)
-  ids <- c()
-  for (i in 1:nn) {
-    sample_id <- sampledata$sequence_id[i]
-    sample_v <- sampledata$v_call[i]
-    sample_v <- unlist(strsplit(sample_v, "\\*"))[1]
-    sample_j <- sampledata$j_call[i]
-    sample_j <- unlist(strsplit(sample_j, "\\*"))[1]
-    NAb_loc <- which(NAb_v == sample_v & NAb_j == sample_j)
-    if (length(NAb_loc) == 0) {
-      next
-    }
-    tmp_NAb_cdr3 <- NAb_cdr3[NAb_loc]
-    sample_cdr3 <- sampledata$junction_aa[i]
-    cdr3_l <- nchar(sample_cdr3)
-    sample_cdr3 <- substr(sample_cdr3, 2, cdr3_l - 1)
-    if (length(grep(paste("^", sample_cdr3, "$", sep = ""), tmp_NAb_cdr3)) != 0) {
-      ids <- c(ids, sample_id)
-    }
+  if (!is.na(method) && !is.na(maxDist)) {
+    result <- join %>%
+      filter(stringdist::stringdist(CDRH3, NAb_CDRH3, method = method) <= maxDist)
+  } else {
+    # Exact matching when neither method nor maxDist is given
+    result <- join %>%
+      filter(stringr::str_detect(stringr::fixed(CDRH3), stringr::fixed(NAb_CDRH3)))
   }
-  ids <- unique(ids)
 
-  return(ids)
+  NAb_n <- length(unique(result$clonotype_index))
+
+  return(NAb_n)
 }
 
-NAb.ratio <- function(input, bcr_clusters, NAb_vjcdr3) {
-  clu_data <- clu2df(bcr_clusters)
-  id_seq <- findNa(input, NAb_vjcdr3)
-  id_clu <- findNa(clu_data, NAb_vjcdr3)
-  if (length(id_seq) == 0) {
+NAb.ratio <- function(pro_data, bcr_clusters, AbDab, method, maxDist, species) {
+  # AbDab
+  AbDab_splits <- t(sapply(AbDab$Heavy.V.Gene, NAb.Species.splits))
+  AbDab$v_call <- AbDab_splits[, 1]
+  AbDab$v_species <- AbDab_splits[, 2]
+  AbDab_splits <- t(sapply(AbDab$Heavy.J.Gene, NAb.Species.splits))
+  AbDab$j_call <- AbDab_splits[, 1]
+  AbDab$j_species <- AbDab_splits[, 2]
+  AbDab <- AbDab[tolower(AbDab$v_species) == tolower(species), ]
+  AbDab <- AbDab[tolower(AbDab$j_species) == tolower(species), ]
+  AbDab <- AbDab[complete.cases(AbDab[, c("v_call", "j_call")]), ]
+  AbDab <- select(AbDab, v_call, j_call, CDRH3) %>%
+    filter(nchar(CDRH3) >= 7)
+
+  # pro_data
+  pro_data$CDRH3 <- substr(pro_data$junction_aa, 2, nchar(pro_data$junction_aa) - 1)
+  pro_data <- select(pro_data, clonotype_index, v_call, j_call, CDRH3)
+  pro_NAb_n <- NAb.seq.query(pro_data, AbDab, method, maxDist)
+
+  if (pro_NAb_n == 0) {
     NAb_ratio <- 0
   } else {
-    NAb_ratio <- length(id_clu) / length(id_seq)
+    clustered_index <- unique(unlist(sapply(bcr_clusters, function(x) x$clonotype_index)))
+    clustered_seqs <- pro_data[clustered_index, ]
+    clu_NAb_n <- NAb.seq.query(clustered_seqs, AbDab, method, maxDist)
+    NAb_ratio <- clu_NAb_n / pro_NAb_n
   }
 
   return(NAb_ratio)
 }
 
-NAb.ratio.df <- function(pro_data_list, clusters_list, group_label, NAb_vjcdr3) {
-  NAb_ratios <- c()
-  name <- c()
-  pb <- utils::txtProgressBar(min = 0, max = length(clusters_list), style = 3)
-  for (i in seq_along(clusters_list)) {
+NAb.ratio.df <- function(pro_data_list, clusters_list, group_label, AbDab, method, maxDist, species) {
+  sample_n <- length(pro_data_list)
+  NAb_ratios <- rep(0, sample_n)
+  name <- rep(0, sample_n)
+  pb <- utils::txtProgressBar(min = 0, max = sample_n, style = 3)
+  for (i in 1:sample_n) {
     pro_data <- pro_data_list[[i]]
     clusters <- clusters_list[[i]]
-    NAb_ratio <- NAb.ratio(pro_data, clusters, NAb_vjcdr3)
-    var_name <- names(clusters_list[i])
-    name <- c(name, var_name)
-    NAb_ratios <- c(NAb_ratios, NAb_ratio)
+    NAb_ratios[i] <- NAb.ratio(
+      pro_data, clusters,
+      AbDab, method, maxDist, species
+    )
+    name[i] <- names(clusters_list[i])
     setTxtProgressBar(pb, i)
   }
   NAb_ratio_df <- data.frame(
@@ -1501,11 +1502,18 @@ NAb.ratio.df <- function(pro_data_list, clusters_list, group_label, NAb_vjcdr3) 
 #' @return Dataframe containing the NAb ratios between the two groups.
 #' @export
 NAb.ratio.calculation <- function(pro_data_list1, clusters_list1, group1_label,
-                                  pro_data_list2, clusters_list2, group2_label, NAb_vjcdr3) {
+                                  pro_data_list2, clusters_list2, group2_label,
+                                  AbDab, method = NA, maxDist = NA, species = "Human") {
   print("group1 processing:")
-  df1 <- NAb.ratio.df(pro_data_list1, clusters_list1, group1_label, NAb_vjcdr3)
+  df1 <- NAb.ratio.df(
+    pro_data_list1, clusters_list1, group1_label,
+    AbDab, method, maxDist, species
+  )
   print("group2 processing:")
-  df2 <- NAb.ratio.df(pro_data_list2, clusters_list2, group2_label, NAb_vjcdr3)
+  df2 <- NAb.ratio.df(
+    pro_data_list2, clusters_list2, group2_label,
+    AbDab, method, maxDist, species
+  )
   NAb_ratio_df <- rbind(df1, df2)
 
   return(NAb_ratio_df)
@@ -1579,11 +1587,6 @@ NAb.Species.splits <- function(x) {
   return(c(v_call, species))
 }
 
-# Remove the first and last letters of the string
-trim <- function(x) {
-  substr(x, 2, nchar(x) - 1)
-}
-
 #' Function: Query the corresponding sequence from the public antibody database
 #'
 #' @param bcr_clusters Clonal families inferred by fastBCR
@@ -1597,7 +1600,7 @@ trim <- function(x) {
 NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = "Human") {
   # Record the associated cluster id and merge all the clusters data frames
   clusters_df <- bind_rows(bcr_clusters, .id = "cluster_id")
-  clusters_df$CDRH3 <- trim(clusters_df$junction_aa)
+  clusters_df$CDRH3 <- substr(clusters_df$junction_aa, 2, nchar(clusters_df$junction_aa) - 1)
 
   # Data preprocessing:
   AbDab_splits <- t(sapply(AbDab$Heavy.V.Gene, NAb.Species.splits))
@@ -1620,7 +1623,7 @@ NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = 
 
   if (!is.na(method) && !is.na(maxDist)) {
     result <- join %>%
-      filter(stringdist::stringdist(trim(CDRH3), trim(NAb_CDRH3), method = method) <= maxDist - 1)
+      filter(stringdist::stringdist(CDRH3, NAb_CDRH3, method = method) <= maxDist)
   } else {
     # Exact matching when neither method nor maxDist is given
     result <- join %>%
@@ -1629,9 +1632,15 @@ NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = 
 
   if (nrow(result) > 0) {
     print(paste("The query result has", nrow(result), "rows."))
+    result <- select(
+      result, cluster_id, clonotype_index, v_call, j_call, junction_aa,
+      NAb_Name, NAb_Heavy.V.Gene, NAb_Heavy.J.Gene, NAb_CDRH3
+    )
   } else {
     print("The query result is empty.")
   }
+
+
 
   return(result)
 }
