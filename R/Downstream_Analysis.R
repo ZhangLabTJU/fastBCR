@@ -1068,7 +1068,7 @@ SHM.df <- function(clusters_list, raw_data_list, group_label) {
 
   SHM_df <- data.frame(
     group = rep(group_label, length(clusters_list)),
-    average_SHM = average_SHM
+    SHM = average_SHM
   )
   rownames(SHM_df) <- name
 
