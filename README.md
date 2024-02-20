@@ -60,7 +60,7 @@ To infer clonal families successfully, the dataset should include essential colu
 ## "j_call" (J gene with or without allele)
 ## "junction_aa" (amino acid translation of the junction)
 
-# Optional.
+# Optional
 ## "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons. Needed for phylogenetic tree construction.)
 ## "c_call" (constant region gene with or without allele. Needed for isotypes related analyis.)
 ```
