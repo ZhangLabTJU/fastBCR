@@ -80,6 +80,8 @@ data.pro <- function(raw_data, count_col_name = NA) {
   productive_data <- data.productive(raw_data)
 
   # clonotype (v-j-junction_aa) deduplicate
+  v_call <- productive_data$v_call
+  j_call <- productive_data$j_call
   junction_aa <- productive_data$junction_aa
   if (!is.na(count_col_name)) {
     count <- productive_data[, count_col_name]
