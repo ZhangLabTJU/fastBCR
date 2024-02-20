@@ -4,9 +4,16 @@ output: html_notebook
 ---
 
 ```{r setup, include = TRUE}
-# You should download and unzip "fastBCR-main.zip" from "https://github.com/ZhangLabTJU/fastBCR" and set it as working directory before running pipeline.
+# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.1.zip and set the folder as working directory before running pipeline.
 # knitr::opts_knit$set(root.dir = "THE/PATH/TO/FASTBCR/FOLDER")
-knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-main") # Replace with your path.
+knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.1") # Replace with your path.
+```
+
+```{r}
+if(!require(devtools)){
+  install.packages("devtools") # If not already installed
+}
+devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.1")
 ```
 
 ```{r}
@@ -294,6 +301,7 @@ clu.size.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
 Tcf20.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
            clusters_list2 = HC_clusters_list, group2_label = "HC")
 ```
+
 ```{r}
 ## 3.4 Somatic hypermutation (SHM) analysis
 # Calculate the average SHM ratio of all clusters in each sample.
@@ -301,7 +309,6 @@ Tcf20.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
 SHM_df = SHM.calculation(clusters_list1 = COVID_clusters_list, raw_data_list1 = COVID_raw_data_list, group1_label = "COVID-19",
                          clusters_list2 = HC_clusters_list, raw_data_list2 = HC_raw_data_list, group2_label = "HC")
 ```
-
 
 ```{r, fig.height = 2, fig.width = 2.2}
 # Boxplot showing the SHM ratios between two groups.
