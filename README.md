@@ -42,7 +42,7 @@ Now you can install fastBCR like so:
 if(!require(devtools)){
   install.packages("devtools")
 }
-devtools::install_github("ZhangLabTJU/fastBCR")
+devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.1")
 ```
 
 ## Usage
@@ -55,12 +55,14 @@ sequencing data from peripheral blood samples of five COVID-19 patients
 (Galson et al., 2020) and five healthy donors (Ghraichy et al., 2020).
 To infer clonal families successfully, the dataset should include essential columns:
 ``` r
-## "sequence_id"
-## "v_call"
-## "j_call"
-## "junction_aa"
-## "junction" (Optional. Needed for phylogenetic tree construction.)
-## "c_call" (Optional. Needed for isotypes related analyis.)
+# Required
+## "v_call" (V gene with or without allele)
+## "j_call" (J gene with or without allele)
+## "junction_aa" (amino acid translation of the junction)
+
+# Optional.
+## "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons. Needed for phylogenetic tree construction.)
+## "c_call" (constant region gene with or without allele. Needed for isotypes related analyis.)
 ```
 
 ### Example pipeline
