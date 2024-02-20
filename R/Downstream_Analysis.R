@@ -1154,7 +1154,7 @@ SHM.iso.calculation <- function(clusters_list1, raw_data_list1, group1_label,
 #' @return Boxplot showing the SHM ratios between the two groups
 #' @export
 SHM.plot <- function(SHM_df) {
-  res <- ggpubr::compare_means(formula = average_SHM ~ group, SHM_df) %>% filter(p.signif != "ns")
+  res <- ggpubr::compare_means(formula = SHM ~ group, SHM_df) %>% filter(p.signif != "ns")
   print(paste0("p-value: ", res$p.format))
   my_comparisons <- list()
   if (nrow(res) != 0) {
@@ -1162,7 +1162,7 @@ SHM.plot <- function(SHM_df) {
       my_comparisons[[i]] <- c(res$group1[i], res$group2[i])
     }
   }
-  ggplot(data = SHM_df, aes(x = group, y = average_SHM, fill = group, color = group)) +
+  ggplot(data = SHM_df, aes(x = group, y = SHM, fill = group, color = group)) +
     stat_boxplot(geom = "errorbar", width = 0.1, linewidth = 0.5, position = position_dodge(0.6)) +
     geom_boxplot(position = position_dodge(0.6), linewidth = 0.5, width = 0.4, outlier.shape = NA) +
     geom_jitter(aes(fill = group), position = position_jitter(0.1), shape = 21, size = 2, alpha = 0.9) +
