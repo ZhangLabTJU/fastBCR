@@ -8,13 +8,7 @@
 
 ## Overview
 
-The goal of fastBCR is to rapid inferencing B cell clonal families from
-massive BCR heavy chain sequences. To facilitate the post-clustering
-analysis, we also provide a series of functional modules in fastBCR,
-including diversity analysis, V/J gene usage statistic, conserved motifs 
-distribution, phylogenetic tree construction, affinity maturation analysis 
-[somatic hypermutation (SHM) and class switch recombination (CSR)] and NAb 
-query, which can be useful for BCR repertoire analysis and antibody discovery.
+Recent advancements in high-throughput sequencing technologies have significantly enhanced our ability to characterize B cell receptor (BCR) repertoires on a large scale. However, the sheer volume and extensive diversity of BCR sequences present formidable challenges for efficient and biologically meaningful analysis. FastBCR emerges as a efficient computational approach tailored for inferring B cell clonal families from massive datasets of BCR heavy chain sequences. In addition to its clustering capabilities, the FastBCR package offers a suite of functional modules designed to streamline post-clustering analysis. These modules encompass diverse functionalities such as diversity analysis, statistics on V/J gene usage, distribution of conserved motifs, construction of phylogenetic trees, and analysis of affinity maturation, including assessments of [somatic hypermutation (SHM) and class switch recombination (CSR)]. Furthermore, FastBCR facilitates the querying of neutralizing antibodies (NAbs), enriching its utility for BCR repertoire analysis and antibody discovery endeavors.
 
 <div align=center>
 <img src="man/figures/README-overview-1.png" width="50%" />
@@ -47,6 +41,30 @@ devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.1")
 
 ## Usage
 
+### Example pipeline
+
+The following outlines an R-based computational pipeline meticulously crafted for the efficient analysis of bulk BCR repertoire heavy chain sequencing data. This pipeline leverages the capabilities of fastBCR, an automated algorithm specialized in rapid clonal family inference, augmented by a suite of indispensable modules for downstream analyses.
+
+Pipeline Components
+
+1. BCR Clonal Family Inference:
+Utilizing fastBCR, this step efficiently identifies and categorizes B cell clonal families within the sequencing dataset.
+
+3. Downstream Analysis:
+V/J Gene Usage Statistics: Provides insights into the usage patterns of V and J genes within the identified clonal families.
+Distribution of Conserved Motifs: Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
+Construction of Phylogenetic Trees: Generates phylogenetic trees to elucidate evolutionary relationships among B cell clonal families.
+Analysis of Affinity Maturation: Evaluates somatic hypermutation (SHM) and class switch recombination (CSR) events to assess affinity maturation.
+Diversity Assessment: Quantifies the diversity of the BCR repertoire, aiding in the understanding of immune system dynamics.
+Neutralizing Antibody (NAb) Query: Facilitates the identification and analysis of neutralizing antibodies within the dataset.
+
+You can follow the **'fastBCR_pipeline.Rmd'** 
+in **'/example'** folder to run the pipeline example. 
+
+<div align=center>
+<img src="man/figures/README-GraphicalAbstract-1.png" width="60%" />
+</div>
+
 ### Example datasets
 
 Ten real example AIRR Rearrangement datasets are included in
@@ -64,20 +82,6 @@ To infer clonal families successfully, the dataset should include essential colu
 ## "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons. Needed for phylogenetic tree construction.)
 ## "c_call" (constant region gene with or without allele. Needed for isotypes related analyis.)
 ```
-
-### Example pipeline
-
-fastBCR is an automatic BCR clonal family inference method, which also
-incorporates multiple functional modules for downstream analyses.
-fastBCR is composed of two parts: **BCR clonal family inference**, and
-**Downstream analysis**.
-
-You can follow the **'fastBCR_pipeline.Rmd'** 
-in **'/example'** folder to run the pipeline example. 
-
-<div align=center>
-<img src="man/figures/README-GraphicalAbstract-1.png" width="60%" />
-</div>
 
 ### Clonal Family Simulation
 
