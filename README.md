@@ -16,6 +16,7 @@ Recent advancements in high-throughput sequencing technologies have significantl
 
 ### REFERENCE
 Wang, K., Cai, L., Wang, H., Shan, S., and Zhang, J. (2024). **Protocol for fast clonal family inference and analysis from large-scale B cell receptor repertoire sequencing data.** STAR Protocols, https://doi.org/10.1016/j.xpro.2024.102969.
+
 Wang, K., Hu, X., and Zhang, J. (2023). **Fast clonal family inference from large-scale B cell repertoire sequencing data.** Cell Rep Methods, https://doi.org/10.1016/j.crmeth.2023.100601.
 
 ## Installation
