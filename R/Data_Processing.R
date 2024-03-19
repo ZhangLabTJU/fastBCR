@@ -28,7 +28,8 @@ data.load <- function(folder_path, storage_format) {
         data_list[[var_name]] <- read.table(archive::archive_read(file_list[i]), header = TRUE, sep = "\t")
       } else if (storage_format == "Rdata") {
         load(archive::archive_read(file_list[i]))
-        data_list[[var_name]] <- get(var_name)
+        loaded_objects <- load(archive::archive_read(file_list[i]))
+        data_list[[var_name]] <- get(loaded_objects)
       }
     } else {
       if (storage_format == "csv") {
@@ -37,17 +38,18 @@ data.load <- function(folder_path, storage_format) {
         data_list[[var_name]] <- read.table(file_list[i], header = TRUE, sep = "\t")
       } else if (storage_format == "Rdata") {
         load(file_list[i])
-        data_list[[var_name]] <- get(var_name)
+        loaded_objects <- load(file_list[i])
+        data_list[[var_name]] <- get(loaded_objects)
       }
     }
     setTxtProgressBar(pb, i)
   }
-
+  
   cat(paste0(
     paste0("\nYou have loaded ", length(data_list), " samples\n"),
     paste(paste0("Sample '", names(data_list), "' contains ", sapply(data_list, function(x) nrow(x)), " sequences"), collapse = "\n")
   ))
-
+  
   return(data_list)
 }
 
@@ -85,6 +87,7 @@ data.pro <- function(raw_data, count_col_name = NA) {
   junction_aa <- productive_data$junction_aa
   if (!is.na(count_col_name)) {
     count <- productive_data[, count_col_name]
+    count[is.na(count)] <- 1
   } else {
     count <- rep(1, nrow(productive_data))
   }

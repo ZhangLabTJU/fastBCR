@@ -768,36 +768,6 @@ name <- function(bcr_clusters, index, loc) {
   return(names)
 }
 
-sort.msa <- function(seqs, seqs0) {
-  l <- length(seqs)
-  loc <- c()
-  all <- c(1:l)
-  all <- as.character(all)
-  for (i in 1:l) {
-    tmp.loc <- which(seqs[i] == seqs0)
-    t <- length(tmp.loc)
-    if (t > 1) {
-      for (tt in 1:t) {
-        tmp.loc0 <- tmp.loc[tt]
-        cha <- as.character(tmp.loc0)
-        if (length(grep(paste("^", cha, "$", sep = ""), all)) != 0) {
-          all <- gsub(paste("^", cha, "$", sep = ""), "", all)
-          loc <- c(loc, tmp.loc0)
-          break
-        } else {
-          next
-        }
-      }
-    } else {
-      cha <- as.character(tmp.loc)
-      all <- gsub(paste("^", cha, "$", sep = ""), "", all)
-      loc <- c(loc, tmp.loc)
-    }
-  }
-
-  return(loc)
-}
-
 #' Plot: Visualization of multiple sequence alignment (MSA) of junction sequences within a cluster
 #'
 #' Perform MSA on the junction of all sequences in the clonal family for visualization
@@ -833,7 +803,7 @@ msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA) 
   }
 
   seqs_aa_no <- gsub("-", "", seqs_aa)
-  loc <- sort.msa(seqs_aa_no, seqs_aa0)
+  loc <- sort_msa(seqs_aa_no, seqs_aa0)
   SEQs_aa@ranges@NAMES <- name(bcr_clusters, index, loc)
   v_call <- unique(bcr_clusters[[index]]$v_call)
   j_call <- unique(bcr_clusters[[index]]$j_call)
@@ -887,7 +857,7 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
   }
 
   seqs_aa_no <- gsub("-", "", seqs_aa)
-  loc <- sort.msa(seqs_aa_no, seqs_aa0)
+  loc <- sort_msa(seqs_aa_no, seqs_aa0)
   SEQs_aa@ranges@NAMES <- name(bcr_clusters, index, loc)
   v_call <- unique(bcr_clusters[[index]]$v_call)
   j_call <- unique(bcr_clusters[[index]]$j_call)
