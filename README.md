@@ -50,10 +50,12 @@ The following outlines an R-based computational pipeline meticulously crafted fo
 Pipeline Components
 
 **1. BCR Clonal Family Inference:**
+
 Utilizing fastBCR, this step efficiently identifies and categorizes B cell clonal families within the sequencing dataset.
 
 **2. Downstream Analysis:**
-**1) V/J Gene Usage Statistics:** Provides insights into the usage patterns of V and J genes within the identified clonal families.
+
+*1) V/J Gene Usage Statistics:* Provides insights into the usage patterns of V and J genes within the identified clonal families.
 
 **2) Distribution of Conserved Motifs:** Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
 
