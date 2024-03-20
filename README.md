@@ -49,16 +49,21 @@ The following outlines an R-based computational pipeline meticulously crafted fo
 
 Pipeline Components
 
-1. BCR Clonal Family Inference:
+**1. BCR Clonal Family Inference:**
 Utilizing fastBCR, this step efficiently identifies and categorizes B cell clonal families within the sequencing dataset.
 
-3. Downstream Analysis:
-V/J Gene Usage Statistics: Provides insights into the usage patterns of V and J genes within the identified clonal families.
-Distribution of Conserved Motifs: Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
-Construction of Phylogenetic Trees: Generates phylogenetic trees to elucidate evolutionary relationships among B cell clonal families.
-Analysis of Affinity Maturation: Evaluates somatic hypermutation (SHM) and class switch recombination (CSR) events to assess affinity maturation.
-Diversity Assessment: Quantifies the diversity of the BCR repertoire, aiding in the understanding of immune system dynamics.
-Neutralizing Antibody (NAb) Query: Facilitates the identification and analysis of neutralizing antibodies within the dataset.
+**2. Downstream Analysis:**
+**1) V/J Gene Usage Statistics:** Provides insights into the usage patterns of V and J genes within the identified clonal families.
+
+**2) Distribution of Conserved Motifs:** Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
+
+**3) Construction of Phylogenetic Trees:** Generates phylogenetic trees to elucidate evolutionary relationships among B cell clonal families.
+
+**4) Analysis of Affinity Maturation:** Evaluates somatic hypermutation (SHM) and class switch recombination (CSR) events to assess affinity maturation.
+
+**5) Diversity Assessment:** Quantifies the diversity of the BCR repertoire, aiding in the understanding of immune system dynamics.
+
+**6) Neutralizing Antibody (NAb) Query:** Facilitates the identification and analysis of neutralizing antibodies within the dataset.
 
 You can follow the **'fastBCR_pipeline.Rmd'** 
 in **'/example'** folder to run the pipeline example. 
