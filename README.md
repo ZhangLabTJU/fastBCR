@@ -55,17 +55,17 @@ Utilizing fastBCR, this step efficiently identifies and categorizes B cell clona
 
 **2. Downstream Analysis:**
 
-*1) V/J Gene Usage Statistics:* Provides insights into the usage patterns of V and J genes within the identified clonal families.
+1) *V/J Gene Usage Statistics:* Provides insights into the usage patterns of V and J genes within the identified clonal families.
 
-**2) Distribution of Conserved Motifs:** Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
+2) *Distribution of Conserved Motifs:* Analyzes the prevalence and distribution of conserved motifs across the BCR sequences.
 
-**3) Construction of Phylogenetic Trees:** Generates phylogenetic trees to elucidate evolutionary relationships among B cell clonal families.
+3) *Construction of Phylogenetic Trees:* Generates phylogenetic trees to elucidate evolutionary relationships among B cell clonal families.
 
-**4) Analysis of Affinity Maturation:** Evaluates somatic hypermutation (SHM) and class switch recombination (CSR) events to assess affinity maturation.
+4) *Analysis of Affinity Maturation:* Evaluates somatic hypermutation (SHM) and class switch recombination (CSR) events to assess affinity maturation.
 
-**5) Diversity Assessment:** Quantifies the diversity of the BCR repertoire, aiding in the understanding of immune system dynamics.
+5) *Diversity Assessment:* Quantifies the diversity of the BCR repertoire, aiding in the understanding of immune system dynamics.
 
-**6) Neutralizing Antibody (NAb) Query:** Facilitates the identification and analysis of neutralizing antibodies within the dataset.
+6) *Neutralizing Antibody (NAb) Query:* Facilitates the identification and analysis of neutralizing antibodies within the dataset.
 
 You can follow the **'fastBCR_pipeline.Rmd'** 
 in **'/example'** folder to run the pipeline example. 
