@@ -334,7 +334,7 @@ combine_pre_clusters <- function(bcr_clusters, sort_clusters, cc, overlap_thre){
 #'
 #' BCR clonal family inference consists of two steps, fast k-mer-based pre-clustering and optimized clustering, to infer clonal families fast and accurately.
 #'
-#' @param input AIRR format data after Data_Processing
+#' @param input Processed data
 #' @param cluster_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
 #' @param overlap_thre The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.
 #' @param consensus_thre The consensus score threshold for filtering candidates. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.
@@ -436,9 +436,16 @@ data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.
   return(BCR_clusters_list)
 }
 
+#' Function: The core step of fastBCR to infer clonal families without consensus filtering from processed data.
+#'
+#' @param input Processed data
+#' @param cluster_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param overlap_thre The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.
+#'
+#' @return Unfiltered clonal families inferred by fastBCR
+#' @export
 BCR.cluster.unfilter <- function(input, cluster_thre = 3,
-                                 overlap_thre = 0.1,
-                                 consensus_thre = 0.8){
+                                 overlap_thre = 0.1){
   bcr_clusters <- c()
   cluster_thre <- cluster_thre + floor(nrow(input) / 1e+05)
   
