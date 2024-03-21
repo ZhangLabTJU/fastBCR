@@ -37,7 +37,13 @@ sort_msa <- function(seqs, seqs0) {
   return(loc)
 }
 
-similar_con <- function(bcr_clusters) {
+#' Function: Calculate consensus scores of clonal families infered by fastBCR
+#'
+#' @param bcr_clusters Clonal families infered by fastBCR
+#'
+#' @return A list where each element is the consensus score of each bcr_cluster
+#' @export
+consensus_scores <- function(bcr_clusters) {
   con.lis <- c()
   for (i in seq_along(bcr_clusters)) {
     seqs_aa0 <- bcr_clusters[[i]]$junction_aa
@@ -392,7 +398,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
   
   # 2.2 Filter candidates with low consensus score
   bcr_clusters <- Sort_clu(bcr_clusters)
-  con <- similar_con(bcr_clusters)
+  con <- consensus_scores(bcr_clusters)
   filt.loc <- which(con < consensus_thre)
   if (length(filt.loc) != 0) {
     bcr_clusters <- bcr_clusters[-filt.loc]
