@@ -2,6 +2,7 @@
 
 export("%>%")
 export(BCR.cluster)
+export(BCR.cluster.unfilter)
 export(CF2fas)
 export(CSR.cluster.plot)
 export(CSR.sample.plot)
