@@ -396,20 +396,22 @@ BCR.cluster <- function(input, cluster_thre = 3,
     bcr_clusters <- combine_pre_clusters(bcr_clusters, sort_clusters, cc, overlap_thre)
   }
   
-  # 2.2 Filter candidates with low consensus score
-  bcr_clusters <- Sort_clu(bcr_clusters)
-  con <- consensus_scores(bcr_clusters)
-  filt.loc <- which(con < consensus_thre)
-  if (length(filt.loc) != 0) {
-    bcr_clusters <- bcr_clusters[-filt.loc]
+  if(length(bcr_clusters) != 0){
+    # 2.2 Filter candidates with low consensus score
+    bcr_clusters <- Sort_clu(bcr_clusters)
+    con <- consensus_scores(bcr_clusters)
+    filt.loc <- which(con < consensus_thre)
+    if (length(filt.loc) != 0) {
+      bcr_clusters <- bcr_clusters[-filt.loc]
+    }
+    
+    for (i in 1:length(bcr_clusters)) {
+      tmp.bcr_clusters <- bcr_clusters[[i]]
+      tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
+      bcr_clusters[[i]] <- tmp.bcr_clusters
+    }
   }
-  
-  for (i in 1:length(bcr_clusters)) {
-    tmp.bcr_clusters <- bcr_clusters[[i]]
-    tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
-    bcr_clusters[[i]] <- tmp.bcr_clusters
-  }
-  
+
   return(bcr_clusters)
 }
 
@@ -496,12 +498,14 @@ BCR.cluster.unfilter <- function(input, cluster_thre = 3,
     
     bcr_clusters <- combine_pre_clusters(bcr_clusters, sort_clusters, cc, overlap_thre)
   }
-  bcr_clusters <- Sort_clu(bcr_clusters)
   
-  for (i in 1:length(bcr_clusters)) {
-    tmp.bcr_clusters <- bcr_clusters[[i]]
-    tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
-    bcr_clusters[[i]] <- tmp.bcr_clusters
+  if(length(bcr_clusters) != 0){
+    bcr_clusters <- Sort_clu(bcr_clusters)
+    for (i in 1:length(bcr_clusters)) {
+      tmp.bcr_clusters <- bcr_clusters[[i]]
+      tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
+      bcr_clusters[[i]] <- tmp.bcr_clusters
+    }
   }
   
   return(bcr_clusters)
