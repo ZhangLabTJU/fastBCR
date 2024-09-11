@@ -48,7 +48,8 @@ consensus_scores <- function(bcr_clusters) {
   for (i in seq_along(bcr_clusters)) {
     seqs_aa0 <- bcr_clusters[[i]]$junction_aa
     sink("default matrix.txt")
-    MSAalign_aa <- msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
+    MSAalign_aa <- msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW", 
+                       gapOpening = 20)
     sink()
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     splt <- strsplit(seqs_aa, "")

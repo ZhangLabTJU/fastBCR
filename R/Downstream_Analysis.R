@@ -785,7 +785,8 @@ msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA) 
   if (type == "AA") {
     seqs_aa0 <- bcr_clusters[[index]]$junction_aa
     sink("default matrix.txt")
-    MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
+    MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW", 
+                            gapOpening = 20)
     sink()
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
@@ -839,7 +840,8 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
   if (type == "AA") {
     seqs_aa0 <- bcr_clusters[[index]]$junction_aa
     sink("default matrix.txt")
-    MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW")
+    MSAalign_aa <- msa::msa(Biostrings::AAStringSet(seqs_aa0), "ClustalW", 
+                            gapOpening = 20)
     sink()
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
@@ -1609,8 +1611,6 @@ NAb.query <- function(bcr_clusters, AbDab, method = NA, maxDist = NA, species = 
   } else {
     print("The query result is empty.")
   }
-
-
 
   return(result)
 }
