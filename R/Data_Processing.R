@@ -130,9 +130,13 @@ data.pro <- function(raw_data, count_col_name = NA, count_filter_thre = NA) {
       count <- pro_data$clone_count
       pro_data <- dplyr::filter(pro_data, count >= count_filter_thre)
     }
+    if(length(pro_data) == 0){
+      return(NA)
+    }
     rownames(pro_data) <- 1:nrow(pro_data)
     
-    return(pro_data)}
+    return(pro_data)
+  }
 }
 
 data.productive <- function(raw_data){
