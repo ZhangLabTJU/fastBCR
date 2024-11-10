@@ -99,7 +99,7 @@ data.pro <- function(raw_data, count_col_name = NA, count_filter_thre = NA) {
   pro_data <- productive_data[!duplicated(v_j_junction_aa), ]
   
   if(length(pro_data) == 0){
-    return NA
+    return(NA)
   }else{
     # clonotype backtrack
     index_match <- data.frame(
