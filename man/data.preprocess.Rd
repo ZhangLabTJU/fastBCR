@@ -4,13 +4,16 @@
 \alias{data.preprocess}
 \title{Function: Preprocessing of raw data to meet the input requirements for clonal family inference}
 \usage{
-data.preprocess(data_list, count_col_name = NA)
+data.preprocess(data_list, count_col_name = NA, count_filter_thre = NA)
 }
 \arguments{
 \item{data_list}{A list where each element is the raw data named after its filename}
 
 \item{count_col_name}{The column name for the count of each sequence.
 Defaults to "NA" which means the original count of the sequence is not taken into account.}
+
+\item{count_filter_thre}{The threshold of "clone_count" under which the clonotype sequence will be filtered.
+Defaults to "NA" which means no clonotype sequence should be filtered.}
 }
 \value{
 A list where each element is the processed data named after its filename

@@ -4,7 +4,7 @@
 \alias{data.pro}
 \title{Function: The first step of fastBCR to process raw data.}
 \usage{
-data.pro(raw_data, count_col_name = NA)
+data.pro(raw_data, count_col_name = NA, count_filter_thre = NA)
 }
 \arguments{
 \item{raw_data}{Raw data for preprocessed.
@@ -14,13 +14,16 @@ The "c_call" (constant region gene with or without allele) column is needed for 
 
 \item{count_col_name}{The column name for the count of each sequence.
 Defaults to "NA" which means the original count of the sequence is not taken into account.}
+
+\item{count_filter_thre}{The threshold of "clone_count" under which the clonotype sequence will be filtered.
+Defaults to "NA" which means no clonotype sequence should be filtered.}
 }
 \value{
 Processed data as input for clonal family inference
 }
 \description{
 The input data needs to contain essential columns including "v_call" (V gene with or without allele), "j_call" (J gene with or without allele) and "junction_aa" (amino acid translation of the junction).
-Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
+Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved. You can also filter clonotype sequence with low frequency to reduce sequencing errors to some extent.
 Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
 The column "clonotype_count" is the count of each clonotype.
 The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
