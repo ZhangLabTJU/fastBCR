@@ -893,8 +893,8 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
 #' @param bcr_clusters Clonal families inferred by fastBCR
 #' @param index Index of cluster
 #' @param python_path The absolute path of the Python interpreter
-#'#' @param raw_data The raw data which the clonal families inferred from
-#' fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data
+#' @param raw_data The raw data which the clonal families inferred from
+#' fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequences of each clonotype from the raw data
 #'
 #' @return ClonalTree returns two files in the 'ClonalTree/Examples/output' folder
 #' ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format
@@ -902,20 +902,23 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
 #'
 #' @export
 clonal.tree.generation <- function(bcr_clusters, index, raw_data, python_path) {
-  ids <- bcr_clusters[[index]]$clonotype_index
-  l <- nchar(ids)
-  if (min(l) > 5) {
-    ids <- stringr::str_sub(ids, l - 4, l)
-  }
-
-  index_match <- bcr_clusters[[index]]$index_match
-  names(index_match) <- NULL
-  raw_index <- unlist(index_match)
   productive_data <- data.productive(raw_data)
-  seqs <- unique(productive_data$junction[raw_index])
-  MSAalign_dna <- msa::msa(Biostrings::DNAStringSet(seqs), "ClustalW")
-  seqs_dna <- as.character(attributes(MSAalign_dna)$unmasked)
-  splt <- strsplit(seqs_dna, "")
+  index_match_list <- bcr_clusters[[index]]$index_match
+  all_ids <- c()
+  all_junctions <- c()
+  for (index_match in index_match_list){
+    all_ids <- c(all_ids, productive_data[index_match,]$sequence_id)
+    all_junctions <- c(all_junctions, productive_data[index_match,]$junction)
+  }
+  clonal_tree_df <- data.frame(sequence_id = all_ids, 
+                               junction = all_junctions)
+  all_junctions <- factor(all_junctions, levels = unique(all_junctions))
+  clonal_tree_df <- clonal_tree_df[!duplicated(all_junctions), ]
+  
+  junction_seqs <- unique(clonal_tree_df$junction)
+  MSAalign_dna <- msa::msa(Biostrings::DNAStringSet(junction_seqs), "ClustalW")
+  align_junction_seqs <- as.character(attributes(MSAalign_dna)$unmasked)
+  splt <- strsplit(align_junction_seqs, "")
   DNA_len <- length(splt[[1]])
   most_DNA <- c()
   for (j in 1:DNA_len) {
@@ -928,23 +931,23 @@ clonal.tree.generation <- function(bcr_clusters, index, raw_data, python_path) {
   }
   consensus_DNA <- paste(most_DNA, collapse = "")
   con.loc <- which(seqs %in% consensus_DNA)
-
-  if (length(con.loc) == 0) {
-    ids <- c("naive", ids)
-    seqs <- c(consensus_DNA, seqs)
-  } else {
-    ids[con.loc] <- "naive"
-  }
+  naive_df <- data.frame(sequence_id = "naive", 
+                         junction = consensus_DNA)
+  if (length(con.loc) != 0) {
+    clonal_tree_df <- clonal_tree_df[-con.loc, ]
+  } 
+  clonal_tree_df <- rbind(naive_df, clonal_tree_df)
+  
   slash <- ifelse(grepl("\\\\", python_path), "\\", "/")
   file_name <- paste0("ClonalFamily_", index)
-  fasta <- paste0(">", ids, "\n", seqs)
+  fasta <- paste0(">", clonal_tree_df$sequence_id, "\n", clonal_tree_df$junction)
   write.table(fasta,
-    file = paste0("ClonalTree", slash, "Examples", slash, "input", slash, file_name, ".fasta"),
-    row.names = F,
-    col.names = F,
-    quote = F
+              file = paste0("ClonalTree", slash, "Examples", slash, "input", slash, file_name, ".fasta"),
+              row.names = F,
+              col.names = F,
+              quote = F
   )
-
+  
   system(paste0(python_path, " ClonalTree/src/clonalTree.py -i ClonalTree/Examples/input/", file_name, ".fasta -o ClonalTree/Examples/output/", file_name, ".abRT.nk -a 0 -r 1 -t 0"))
 }
 
