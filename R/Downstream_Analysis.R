@@ -930,7 +930,7 @@ clonal.tree.generation <- function(bcr_clusters, index, raw_data, python_path) {
     most_DNA <- c(most_DNA, tmp.DNA)
   }
   consensus_DNA <- paste(most_DNA, collapse = "")
-  con.loc <- which(seqs %in% consensus_DNA)
+  con.loc <- which(align_junction_seqs %in% consensus_DNA)
   naive_df <- data.frame(sequence_id = "naive", 
                          junction = consensus_DNA)
   if (length(con.loc) != 0) {
