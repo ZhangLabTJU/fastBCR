@@ -8,7 +8,8 @@ data.BCR.clusters(
   pro_data_list,
   cluster_thre = 3,
   overlap_thre = 0.1,
-  consensus_thre = 0.8
+  consensus_thre = 0.8,
+  paired = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ data.BCR.clusters(
 \item{overlap_thre}{The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.}
 
 \item{consensus_thre}{The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.}
+
+\item{paired}{If TRUE, select fastBCR-p to infer paired data.}
 }
 \value{
 A list where each element is a list of clonal families inferred by fastBCR from a single sample

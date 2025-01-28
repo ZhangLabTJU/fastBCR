@@ -4,7 +4,12 @@
 \alias{BCR.cluster.unfilter}
 \title{Function: The core step of fastBCR to infer clonal families without consensus filtering from processed data.}
 \usage{
-BCR.cluster.unfilter(input, cluster_thre = 3, overlap_thre = 0.1)
+BCR.cluster.unfilter(
+  input,
+  cluster_thre = 3,
+  overlap_thre = 0.1,
+  paired = TRUE
+)
 }
 \arguments{
 \item{input}{Processed data}
@@ -12,6 +17,8 @@ BCR.cluster.unfilter(input, cluster_thre = 3, overlap_thre = 0.1)
 \item{cluster_thre}{Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
 
 \item{overlap_thre}{The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.}
+
+\item{paired}{If TRUE, select fastBCR-p to infer paired data.}
 }
 \value{
 Unfiltered clonal families inferred by fastBCR
