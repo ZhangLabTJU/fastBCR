@@ -6,13 +6,41 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
+## Update Notes
+
+**Date:** January 2025  
+**Version:** 1.2.0  
+
+**New Features:**
+- **Integration with fastBCR-p**  
+  `fastBCR-p` is an improved algorithm built on top of fastBCR, specifically designed for **paired BCR data**. It includes the following features:
+  - Integrating light-chain refinements into heavy-chain clustering  to optimize clonal family inference.
+  - Supports public antibody prediction and filtering:
+    - Binary classification for heavy chain antibodies (`public VH`).
+    - Regression prediction for light chain antibodies (`public VL`).
+
+- **Added the `paired` parameter to select heavy clustering or paired clustering**  
+  A new `paired` parameter has been introduced (default is `FALSE`). When set to `TRUE`, the enhanced algorithm **fastBCR-p** is activated, enabling optimized clustering for paired-chain BCR sequencing datasets. This feature significantly improves clustering accuracy for paired-chain data.
+
+- **Backward Compatibility**  
+  Existing functions remain unaffected, ensuring seamless integration without disrupting current workflows.
+x1
+**For detailed documentation and usage guidelines on fastBCR-p**, please refer to the [fastBCR-p README](https://github.com/ZhangLabTJU/fastBCR/blob/main/example/example_paired/README.md). It includes installation instructions, configuration details, example datasets, and output explanations.
+
+
 ## Overview
+
 
 Recent advancements in high-throughput sequencing technologies have significantly enhanced our ability to characterize B cell receptor (BCR) repertoires on a large scale. However, the sheer volume and extensive diversity of BCR sequences present formidable challenges for efficient and biologically meaningful analysis. FastBCR emerges as a efficient computational approach tailored for inferring B cell clonal families from massive datasets of BCR heavy chain sequences. In addition to its clustering capabilities, the FastBCR package offers a suite of functional modules designed to streamline post-clustering analysis. These modules encompass diverse functionalities such as diversity analysis, statistics on V/J gene usage, distribution of conserved motifs, construction of phylogenetic trees, and analysis of affinity maturation, including assessments of [somatic hypermutation (SHM) and class switch recombination (CSR)]. Furthermore, FastBCR facilitates the querying of neutralizing antibodies (NAbs), enriching its utility for BCR repertoire analysis and antibody discovery endeavors.
 
 <div align=center>
 <img src="man/figures/README-overview-1.png" width="50%" />
 </div>
+
+## License
+
+We have updated the License to Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) (see [License file](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans)).
+
 
 ### REFERENCE
 Wang, K., Cai, L., Wang, H., Shan, S., and Zhang, J. (2024). **Protocol for fast clonal family inference and analysis from large-scale B cell receptor repertoire sequencing data.** STAR Protocols, https://doi.org/10.1016/j.xpro.2024.102969.

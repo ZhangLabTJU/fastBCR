@@ -19,3 +19,5 @@ install_version("rstatix", version = "0.7.2", repos = "http://cran.us.r-project.
 install_version("stringdist", version = "0.9.10", repos = "http://cran.us.r-project.org")
 install_version("stringr", version = "1.5.0", repos = "http://cran.us.r-project.org")
 install_version("scales", version = "1.2.1", repos = "http://cran.us.r-project.org")
+install_version("reticulate", version = "1.40.0", repos = "http://cran.us.r-project.org")
+
