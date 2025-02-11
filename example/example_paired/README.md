@@ -123,7 +123,7 @@ cluster_list_1 <- BCR.clusters(paired_sample_list[[1]], cluster_thre = 3,
 The public antibody prediction module in **fastBCR-p** leverages the pre-trained **BCR-V-BERT** model to classify heavy chain antibodies (binary classification) and predict light chain antibodies (regression). This feature allows for the identification of public antibodies using advanced transformer-based sequence analysis.
 
 #### Python Dependency
-The public antibody prediction module depends on the **BCR-V-BERT** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT README](https://github.com/xxxxx).
+The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRPredictor** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT README](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor README](https://github.com/ZhangLabTJU/PubBCRPredictor).
 
 ***Installation***
 
@@ -137,15 +137,12 @@ The public antibody prediction module depends on the **BCR-V-BERT** Python packa
   ```bash
   conda create --name r-py-env python=3.9
   conda activate r-py-env
-  conda install -c conda-forge biopython biotite fair-esm lmdb matplotlib mdanalysis numpy pandas pdb-tools requests scikit-learn seaborn tqdm cpyy -y
-  conda install pyg::pytorch-scatter
-  conda install esri::torch-geometric
-  conda install bioconda::blosum 
   ```
   
-  3. Install bcr_v_bert and pubbcrpredictor manually**
+  3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
+  4. Install bcr_v_bert and pubbcrpredictor manually**
 
-      Setup bcr_v_bert
+      Setup bcr_v_bert package mannualy
       ```bash
         tar -zxvf bcr_v_bert-1.0.0.tar.gz
         cd bcr_v_bert-1.0.0
@@ -153,7 +150,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** Python packa
         python setup.py install
       ```
 
-      Setup bcr_v_bert
+      Setup pubbcrpredictor package mannualy
       ```bash
         cd ..
         tar -zxvf pubbcrpredictor-1.0.0.tar.gz
@@ -224,6 +221,12 @@ heavy_chain_results <- predict_public_antibody(data_heavy, model = "cdrh", pytho
 
 # Predict public light chain antibodies (all CDRs)
 light_chain_results <- predict_public_antibody(data_light, model = "cdrl", python_env = "r-py-env")
+
+# Predict public heavy chain antibodies (CDR3)
+heavy_chain_results_cdr3 <- predict_public_antibody(data_heavy, model = "cdrh3", python_env = "r-py-env")
+
+# Predict public light chain antibodies (CDR3)
+light_chain_results_cdr3 <- predict_public_antibody(data_light, model = "cdrl3", python_env = "r-py-env")
 ```
 Output:
 ```plaintext
@@ -285,6 +288,7 @@ If you experience any issues please add an issue to the [Github](https://github.
 
 1. When setup BCR_V_BERT and PubBCRPredictor packages on Mac OS, you may need to install the packages this way.
     ```bash
+    conda install -c conda-forge biopython biotite fair-esm lmdb matplotlib mdanalysis numpy pandas pdb-tools requests scikit-learn seaborn tqdm cpyy -y
     conda install pyg::pytorch-scatter
     conda install esri::torch-geometric
     conda install bioconda::blosum 

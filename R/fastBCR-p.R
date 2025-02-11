@@ -246,7 +246,6 @@ import torch
 from PubBCRPredictor import PubBCRPredictor_Runner, MLP
 from BCR_V_BERT import BCR_V_BERT_Runner
 
-data = r.data
 data['cdr'] = data['cdr1'] + '|' + data['cdr2'] + '|' + data['cdr3']
 sequence = data['cdr'].values
 vgenes = data['vgene'].values
@@ -254,7 +253,7 @@ cdr3s = data['cdr3'].values
 
 model_name = model
 if model == 'cdrh':
-    bcr_v_bert = BCR_V_BERT_Runner(model='cdrh_old')
+    bcr_v_bert = BCR_V_BERT_Runner(model='cdrh')
     pub_runner = PubBCRPredictor_Runner(model='cdrh')
     feature = bcr_v_bert.embed(sequence,vgenes)
 
