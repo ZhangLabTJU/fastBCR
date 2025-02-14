@@ -5,13 +5,7 @@
 ## License
 
 Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) (see [License file](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.zh-hans)).
-This software is not to be used for commerical purposes.
-
-## Reference
-
-> Original heavy-chain clustering publication: [Wang  et al., 2023](https://doi.org/10.1016/j.crmeth.2023.100601).
-
-> Original heavy-chain clustering protocol: [Wang  et al., 2024](https://doi.org/10.1016/j.xpro.2024.102969).
+This software is not to be used for commercial purposes.
 
 ## Presentation
 
@@ -27,7 +21,7 @@ Existing heavy chain clone family inference methods all suffer from the issue of
    &emsp;&emsp; 3. `LC V gene`: the fraction of dominate V gene usage,\
    &emsp;&emsp; 4. `LC J gene`: the fraction of dominate J gene usage.
 
-* fastBCR-p can additionally be used to predict whether a heavy chain or light chain antibody is a <strong>public antibody</strong>.
+* fastBCR-p can additionally be used to predict whether a heavy chain or light chain antibody is a <strong>public antibody</strong>.\
   &emsp;&emsp; 1. <strong>public VH</strong>: binary classification of heavy chain antibodies\
   &emsp;&emsp; 2. <strong>public VL</strong>: regression prediction of light chain antibodies.
 
@@ -105,11 +99,11 @@ paired_sample_list <- paired.preprocess(raw_sample_list)
 
 ***2. Clonal family inferring:***
 ``` r
-# Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paried BCR sample list
+# Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR sample list
 cluster_lists <- data.BCR.clusters(paired_sample_list, cluster_thre = 3,
                                      overlap_thre = 0.1, consensus_thre = 0.8, 
                                      paired = TRUE)
-# Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paried BCR data
+# Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR data
 cluster_list_1 <- BCR.clusters(paired_sample_list[[1]], cluster_thre = 3,
                                  overlap_thre = 0.1, consensus_thre = 0.8, 
                                  paired = TRUE)
@@ -123,7 +117,7 @@ cluster_list_1 <- BCR.clusters(paired_sample_list[[1]], cluster_thre = 3,
 The public antibody prediction module in **fastBCR-p** leverages the pre-trained **BCR-V-BERT** model to classify heavy chain antibodies (binary classification) and predict light chain antibodies (regression). This feature allows for the identification of public antibodies using advanced transformer-based sequence analysis.
 
 #### Python Dependency
-The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRPredictor** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT README](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor README](https://github.com/ZhangLabTJU/PubBCRPredictor).
+The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRPredictor** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
 
 ***Installation***
 
@@ -142,7 +136,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
   4. Install bcr_v_bert and pubbcrpredictor manually**
 
-      Setup bcr_v_bert package mannualy
+      Setup bcr_v_bert package manualy
       ```bash
         tar -zxvf bcr_v_bert-1.0.0.tar.gz
         cd bcr_v_bert-1.0.0
@@ -150,7 +144,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
         python setup.py install
       ```
 
-      Setup pubbcrpredictor package mannualy
+      Setup pubbcrpredictor package manualy
       ```bash
         cd ..
         tar -zxvf pubbcrpredictor-1.0.0.tar.gz
@@ -193,10 +187,10 @@ predict_public_antibody <- function(data, model = "cdrh", python_env = "r-py-env
 
 | Model | model Argument | Prediction Type |
 | ----------- | ----------- | ----------- |
-| Heavy chain classification (all CDRs) | "cdrh"  | Binary classification |
-| Heavy chain classification (CDR3 only)| "cdrh3" | Binary classification |
-| Light chain regression (all CDRs)     | "cdrl"  | Regression |
-| Light chain regression (CDR3 only)    | "cdrl3" | Regression |
+| Heavy chain classification (V gene + all CDRs) | "cdrh"  | Binary classification |
+| Heavy chain classification (V gene + CDR3 only)| "cdrh3" | Binary classification |
+| Light chain regression (V gene + all CDRs)     | "cdrl"  | Regression |
+| Light chain regression (V gene + CDR3 only)    | "cdrl3" | Regression |
 
 ### Usage Example
 1.	Load the fastBCR library and sample data:
@@ -279,12 +273,12 @@ Output:
 ***Sample Data***
 Sample datasets for testing the public antibody prediction module are available in the example_paired folder. These datasets include required columns such as cdr1, cdr2, cdr3, and vgene for both heavy and light chain antibodies.
 
-For detailed information about the BCR-V-BERT Python package and its capabilities, please refer to the [BCR-V-BERT README](https://github.com/xxxxx)..
+For detailed information about the BCR-V-BERT Python package and its capabilities, please refer to the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT).
 
 
 ## Issues
 
-If you experience any issues please add an issue to the [Github](https://github.com/ZhangLabTJU/fastBCR).
+If you experience any issues please add an issue to the [fastBCR Issues](https://github.com/ZhangLabTJU/fastBCR/issues).
 
 1. When setup BCR_V_BERT and PubBCRPredictor packages on Mac OS, you may need to install the packages this way.
     ```bash
@@ -306,12 +300,15 @@ If you experience any issues please add an issue to the [Github](https://github.
       FileNotFoundError: [Errno 2] No such file or directory: '/Users/XXX/anaconda3/envs/public/lib/python3.9/site-packages/BCR_V_BERT-1.0.0-py3.9.egg/BCR_V_BERT/model_pretrained/cdrl3/v_vocab.npy'
     ```
 
-## Contact
+## Reference
 
-Please contact jian_zhang@tju.edu.cn to report issues of for any questions.
+> Original heavy-chain clustering publication: [Wang  et al., 2023](https://doi.org/10.1016/j.crmeth.2023.100601).
+
+> Original heavy-chain clustering protocol: [Wang  et al., 2024](https://doi.org/10.1016/j.xpro.2024.102969).
 
 ## Acknowledgements
 
 The sample data is downloaded from Observed Antibody Space:
 > Olsen, T.H., Boyles, F., and Deane, C.M. (2022). Observed Antibody Space: A diverse database of cleaned, annotated, and translated unpaired and paired antibody sequences. Protein Sci 31, 141–146. https://doi.org/10.1002/pro.4205.
 
+<div>
