@@ -11,13 +11,13 @@ This software is not to be used for commercial purposes.
 
 fastBCR-p is a novel computational pipeline that incorporates public antibody filtering and strategic light-chain segregation, significantly improving both the accuracy and throughput of <strong><ins>large-scale paired BCR</ins></strong> clustering.
 
-Existing heavy chain clone family inference methods all suffer from the issue of confounded light chain features. To address this, based on the heavy chain clustering results from fastBCR, fastBCR-p split sequences within heavy chain clusters that have different light chain VJ genes.
+Existing heavy chain clonal family inference methods all suffer from the issue of confounded light chain features. To address this, based on the heavy chain clustering results from fastBCR, fastBCR-p split sequences within heavy chain clusters that have different light chain VJ genes.
 
-* fastBCR-p provides a <strong><ins>optimized clonal family tool</ins></strong> inference for paired chain datasets.
+* fastBCR-p provides an <strong><ins>optimized clonal family tool</ins></strong> inference for paired chain datasets.
 
-* fastBCR-p provides a evaluation of the <strong><ins>consistency score</ins></strong> of light and heavy chains within clusters:\
-   &emsp;&emsp; 1. `CDR3H`: consensus score of heavy chain junction,\
-   &emsp;&emsp; 2. `CDR3L`: consensus score of light chain junction,\
+* fastBCR-p provides an evaluation of the <strong><ins>consistency score</ins></strong> of light and heavy chains within clusters:\
+   &emsp;&emsp; 1. `CDR3H`: consensus score of heavy chain junction amino acid sequence,\
+   &emsp;&emsp; 2. `CDR3L`: consensus score of light chain junction amino acid sequence,\
    &emsp;&emsp; 3. `LC V gene`: the fraction of dominate V gene usage,\
    &emsp;&emsp; 4. `LC J gene`: the fraction of dominate J gene usage.
 
@@ -134,12 +134,12 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   ```
   
   3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
-  4. Install bcr_v_bert and pubbcrpredictor manually**
+  4. Install bcr_v_bert and pubbcrpredictor manually
 
       Setup bcr_v_bert package manualy
       ```bash
-        tar -zxvf bcr_v_bert-1.0.0.tar.gz
-        cd bcr_v_bert-1.0.0
+        tar -zxvf bcr_v_bert.tar.gz
+        cd bcr_v_bert
 
         python setup.py install
       ```
@@ -147,8 +147,8 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
       Setup pubbcrpredictor package manualy
       ```bash
         cd ..
-        tar -zxvf pubbcrpredictor-1.0.0.tar.gz
-        cd pubbcrpredictor-1.0.0
+        tar -zxvf pubbcrpredictor.tar.gz
+        cd pubbcrpredictor
 
         python setup.py install
       ```
