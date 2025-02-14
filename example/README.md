@@ -141,7 +141,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
       ```bash
         tar -zxvf bcr_v_bert.tar.gz
         cd bcr_v_bert
-
+        pip install -r requirements.txt
         python setup.py install
       ```
 
@@ -150,7 +150,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
         cd ..
         tar -zxvf pubbcrpredictor.tar.gz
         cd pubbcrpredictor
-
+        pip install -r requirements.txt
         python setup.py install
       ```
 
