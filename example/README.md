@@ -66,7 +66,7 @@ Utilizing fastBCR-p, this step efficiently identifies and categorizes paired B c
 
 ***Example datasets***
 
-Ten real paired example AIRR Rearrangement datasets are included in the fastBCR package in the 'example_paired' folder. The datasets consist of BCR sequencing data from unsorted B Cells of a CMV patient (Run: 1287174, [Jaffe et al., 2020](https://doi.org/10.5281/zenodo.6471398)) and memory B Cells of a SARS-CoV-2 patient (Run: 1279050, [Jaffe et al., 2020](https://doi.org/10.5281/zenodo.6471398)), based on open-source antibody repertoires from the Observed Antibody Space (OAS).
+Two real paired example AIRR Rearrangement datasets are included in the fastBCR package in the 'example_paired' folder. The datasets consist of BCR sequencing data from unsorted B Cells of a CMV patient (Run: 1287174, [Jaffe et al., 2020](https://doi.org/10.5281/zenodo.6471398)) and memory B Cells of a SARS-CoV-2 patient (Run: 1279050, [Jaffe et al., 2020](https://doi.org/10.5281/zenodo.6471398)), based on open-source antibody repertoires from the Observed Antibody Space (OAS).
 
 ***Required columns***
 
@@ -91,7 +91,7 @@ Data preprocessing:
 PAIRED_folder_path <- "example/example_paired"
 # the sample datasets are csv files
 raw_sample_list <- data.load(folder_path = PAIRED_folder_path,
-                             storage_format = "csv", header = FALSE)
+                             storage_format = "csv")
 # preprocess datasets and check required columns
 paired_sample_list <- paired.preprocess(raw_sample_list)
 
@@ -104,7 +104,7 @@ cluster_lists <- data.BCR.clusters(paired_sample_list, cluster_thre = 3,
                                      overlap_thre = 0.1, consensus_thre = 0.8, 
                                      paired = TRUE)
 # Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR data
-cluster_list_1 <- BCR.clusters(paired_sample_list[[1]], cluster_thre = 3,
+cluster_list_1 <- BCR.cluster(paired_sample_list[[1]], cluster_thre = 3,
                                  overlap_thre = 0.1, consensus_thre = 0.8, 
                                  paired = TRUE)
 ```
