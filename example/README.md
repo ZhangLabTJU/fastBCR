@@ -59,6 +59,7 @@ devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.2.1")
 ### Example pipeline
 
 The following outlines an R-based computational pipeline meticulously crafted for the efficient analysis of bulk BCR repertoire paired chain sequencing data. This pipeline leverages the capabilities of fastBCR-p, an automated algorithm specialized in rapid clonal family inference.
+You can also run the pipeline refer to [fastBCR-p_pipeline.Rmd](https://github.com/ZhangLabTJU/fastBCR/blob/v1.2.1/example/fastBCR-p_pipeline.Rmd).
 
 ### 1. Paired BCR Clonal Family Inference:
 
