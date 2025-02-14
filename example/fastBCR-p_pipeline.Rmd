@@ -1,0 +1,106 @@
+---
+title: "fastBCR pipeline notebook"
+output: html_notebook
+---
+
+```{r setup, include = TRUE}
+# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.2.1.zip and set the folder as working directory before running pipeline.
+# knitr::opts_knit$set(root.dir = "THE/PATH/TO/FASTBCR/FOLDER")
+knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.2.1") # Replace with your path.
+```
+
+```{r}
+if(!require(devtools)){
+  install.packages("devtools") # If not already installed
+}
+devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.2.1")
+```
+
+```{r}
+library(fastBCR)
+```
+
+```{r}
+### 1. Fast BCR clonal family inference
+## 1.1. Data loading
+# load paired dataset from PAIRED_folder_path
+PAIRED_folder_path <- "example/example_paired"
+```
+
+```{r}
+## 1.2. Data preprocessing
+# Preprocessing of raw data to meet the input requirements for clonal family inference.
+# the sample datasets are csv files
+raw_sample_list <- data.load(folder_path = PAIRED_folder_path,
+                             storage_format = "csv")
+# preprocess datasets and check required columns
+paired_sample_list <- paired.preprocess(raw_sample_list)
+```
+
+```{r}
+## 1.3. BCR clonal family inference with paired chain
+# Fast clonal family inference from paired.preprocess data.
+# The "cluster_thre" parameter represents minimal clustering criteria (minimum number of sequences needed to form a cluster) and defaults to 3.
+# For high efficiency, the "cluster_thre" is increased by 1 for every 100,000 entries of input data.
+# The "overlap_thre" parameter represents overlap coefficient threshold for merging two clusters, selectable range (0,1) and defaults to 0.1.
+# Lower "overlap_thre" may lead to overclustering while higher thresholds may lead to the split of clonal families.
+# The "consensus_thre" parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
+# A higher "consensus_thre" means stricter inference of the cluster.
+# Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR sample list. While, defult parameter is "paired = FASLE", meant to inference only by heavy chain.)
+cluster_lists <- data.BCR.clusters(paired_sample_list, cluster_thre = 3,
+                                   overlap_thre = 0.1, consensus_thre =0.8, 
+                                   paired = TRUE)
+cluster_list_1 <- BCR.cluster(paired_sample_list[[1]], cluster_thre = 3,
+                                 overlap_thre = 0.1, consensus_thre = 0.8, 
+                                 paired = TRUE)
+```
+
+```{r, fig.height = 8, fig.width = 5}
+### 2.Public Classification Analysis
+## 2.1. Install `reticulate` for R-Python integration:
+install.packages("reticulate")
+library(reticulate)
+```
+```{r, fig.height = 2.5, fig.width = 14}
+## 2.2. Create and activate the Python environment with the necessary dependencies:
+# ```bash
+# conda create --name r-py-env python=3.9
+# conda activate r-py-env
+# ```
+## 2.3. Install bcr_v_bert and pubbcrpredictor manually according to the README.md
+```
+
+```{r}
+## 2.4.	Load the fastBCR library and sample data:
+# Load sample data (provided in the 'example_paired' folder)
+data_heavy <- read.csv("example/example_public/public_heavy_antibody.csv")
+data_light <- read.csv("example/example_public/public_light_antibody.csv")
+## 2.5 Load reticulate for R-Python integration and activate the Python environment with BCR_V_BERT and PubBCRPredictor packages
+# Activate the Python environment in R, and "r-py-env" need to be changed to your Python environment.
+use_condaenv("r-py-env", required = TRUE)
+
+## 2.6 Run public antibody prediction:
+# The "model" parameter is the prediction model you want to use.
+# There are 4 models as follows:
+
+# Predict public heavy chain antibodies (all CDRs)
+heavy_chain_results <- predict_public_antibody(data_heavy, model = "cdrh", python_env = "r-py-env")
+
+# Predict public light chain antibodies (all CDRs)
+light_chain_results <- predict_public_antibody(data_light, model = "cdrl", python_env = "r-py-env")
+
+# Predict public heavy chain antibodies (CDR3)
+heavy_chain_results_cdr3 <- predict_public_antibody(data_heavy, model = "cdrh3", python_env = "r-py-env")
+
+# Predict public light chain antibodies (CDR3)
+light_chain_results_cdr3 <- predict_public_antibody(data_light, model = "cdrl3", python_env = "r-py-env")
+```
+
+```{r}
+## 2.7 Filter and separate high and low public antibodies:
+# Apply the filter to the prediction results
+filtered_results <- filter_public_antibodies(heavy_chain_results, threshold = 0.5)
+
+print(filtered_results$high_public)  # High public antibodies
+print(filtered_results$low_public)  # Low public antibodies
+```
