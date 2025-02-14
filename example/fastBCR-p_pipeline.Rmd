@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r setup, include = TRUE}
-# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.2.1.zip and set the folder as working directory before running pipeline.
+# You should download and unzip https://codeload.github.com/ZhangLabTJU/fastBCR/zip/refs/heads/v1.2.1 and set the folder as working directory before running pipeline.
 # knitr::opts_knit$set(root.dir = "THE/PATH/TO/FASTBCR/FOLDER")
 knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.2.1") # Replace with your path.
 ```
