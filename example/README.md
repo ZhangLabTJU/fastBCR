@@ -208,7 +208,7 @@ library(reticulate)
 use_condaenv("r-py-env", required = TRUE)
 ```
 
-2.	Run public antibody prediction:
+3.	Run public antibody prediction:
 ```r
 # Predict public heavy chain antibodies (all CDRs)
 heavy_chain_results <- predict_public_antibody(data_heavy, model = "cdrh", python_env = "r-py-env")
@@ -243,7 +243,7 @@ Output:
 6 SSNIGAGSD  GNS QSYDSSLSGSWV IGLV1-40     5     5.265253
 ```
 
-3.	Filter and separate high and low public antibodies:
+4.	Filter and separate high and low public antibodies:
 ```r
 
 # Apply the filter to the prediction results
