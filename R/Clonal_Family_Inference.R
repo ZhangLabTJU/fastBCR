@@ -352,7 +352,7 @@ combine_pre_clusters <- function(bcr_clusters, sort_clusters, cc, overlap_thre){
 BCR.cluster <- function(input, cluster_thre = 3,
                         overlap_thre = 0.1,
                         consensus_thre = 0.8,
-                        paired = TRUE) {
+                        paired = FALSE) {
   if(paired){
     bcr_clusters <- BCR.clusters.p(input, cluster_thre,
                                          overlap_thre, consensus_thre)
@@ -434,7 +434,7 @@ BCR.cluster <- function(input, cluster_thre = 3,
 #' @return A list where each element is a list of clonal families inferred by fastBCR from a single sample
 #' @export
 data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8,
-                              paired = TRUE) {
+                              paired = FALSE) {
   if(paired){
     BCR_clusters_list <- data.BCR.clusters.p(pro_data_list, cluster_thre,
                                         overlap_thre, consensus_thre)
@@ -470,7 +470,7 @@ data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.
 #' @export
 BCR.cluster.unfilter <- function(input, cluster_thre = 3,
                                  overlap_thre = 0.1,
-                                 paired = TRUE){
+                                 paired = FALSE){
   if(paired){
     bcr_clusters <- BCR.clusters.unfilter.p(input, cluster_thre,
                                    overlap_thre)
