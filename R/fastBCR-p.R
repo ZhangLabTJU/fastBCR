@@ -106,11 +106,12 @@ BCR.clusters.p<- function(input, cluster_thre = 3,
     if (length(filt.loc) != 0) {
       bcr_clusters <- bcr_clusters[-filt.loc]
     }
-
-    for (i in 1:length(bcr_clusters)) {
-      tmp.bcr_clusters <- bcr_clusters[[i]]
-      tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
-      bcr_clusters[[i]] <- tmp.bcr_clusters
+    if(length(bcr_clusters) != 0){
+      for (i in 1:length(bcr_clusters)) {
+        tmp.bcr_clusters <- bcr_clusters[[i]]
+        tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
+        bcr_clusters[[i]] <- tmp.bcr_clusters
+      }
     }
 
   }
