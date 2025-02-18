@@ -128,7 +128,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   library(reticulate)
   ```
 
-  2. Create and activate the Python environment with the necessary dependencies:
+  2. Create and activate the Python environment with the necessary dependencies in Anaconda Prompt:
   ```bash
   conda create --name r-py-env python=3.9
   conda activate r-py-env
@@ -137,19 +137,19 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
   4. Install bcr_v_bert and pubbcrpredictor manually
 
-      Setup bcr_v_bert package manualy
+      Setup BCR_V_BERT package manualy
       ```bash
-        tar -zxvf bcr_v_bert.tar.gz
-        cd bcr_v_bert
+        unzip BCR_V_BERT.zip
+        cd BCR_V_BERT
         pip install -r requirements.txt
         python setup.py install
       ```
 
-      Setup pubbcrpredictor package manualy
+      Setup PubBCRPredictor package manualy
       ```bash
         cd ..
-        tar -zxvf pubbcrpredictor.tar.gz
-        cd pubbcrpredictor
+        unzip PubBCRPredictor.zip
+        cd PubBCRPredictor
         pip install -r requirements.txt
         python setup.py install
       ```
@@ -281,24 +281,32 @@ For detailed information about the BCR-V-BERT Python package and its capabilitie
 
 If you experience any issues please add an issue to the [fastBCR Issues](https://github.com/ZhangLabTJU/fastBCR/issues).
 
-1. When setup BCR_V_BERT and PubBCRPredictor packages on Mac OS, you may need to install the packages this way.
+1. If you encounter the following issues during the installation of BCR_V_BERT and PubBCRPredictor packages:
     ```bash
-    conda install -c conda-forge biopython biotite fair-esm lmdb matplotlib mdanalysis numpy pandas pdb-tools requests scikit-learn seaborn tqdm cpyy -y
-    conda install pyg::pytorch-scatter
-    conda install esri::torch-geometric
-    conda install bioconda::blosum 
-    conda install cppy
-    conda install -c conda-forge kiwisolver
-    conda install -c conda-forge contourpy
-    conda install openblas
+    ERROR: pip’s dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+    xxx_b requires xxx_a>=x.xx, which is not installed.
+    ```
+    
+   You need to install “xxx_a” and “xxx_b” package separately, and then repeat the previous steps:
+    ```bash
+    conda install xxx_a
+    conda install xxx_b
+    
+    pip install -r requirements.txt
+    python setup.py install
     ```
 
-2. If you have load necessary packages but still cannot run the predict_public_antibody function, you need check if the pretrained model are loaded successfully.
+1. If you have load necessary packages but still cannot run the predict_public_antibody function, you need check if the pretrained model are loaded successfully.
   e.g. The cdrl3 pretrained model is not loaded:
     ```r
     > light_chain_results <- predict_public_antibody(data, model = "cdrl3", python_env = "public")
     Error in py_run_string_impl(code, local, convert) : 
-      FileNotFoundError: [Errno 2] No such file or directory: '/Users/XXX/anaconda3/envs/public/lib/python3.9/site-packages/BCR_V_BERT-1.0.0-py3.9.egg/BCR_V_BERT/model_pretrained/cdrl3/v_vocab.npy'
+      FileNotFoundError: [Errno 2] No such file or directory: '/Users/XXX/anaconda3/envs/r-py-env/lib/python3.9/site-packages/BCR_V_BERT-1.0.0-py3.9.egg/BCR_V_BERT/model_pretrained/cdrl3/v_vocab.npy'
+    ```
+  e.g. The BCR_V_BERT and PubBCRPredictor packages are not installed successfully:
+    ```r
+    Error in py_run_string_impl(code, local,convert)
+       NameError: name 'data' is not defined
     ```
 
 ## Reference
