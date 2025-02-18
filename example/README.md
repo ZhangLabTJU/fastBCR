@@ -297,12 +297,13 @@ If you experience any issues please add an issue to the [fastBCR Issues](https:/
     ```
 
 1. If you have load necessary packages but still cannot run the predict_public_antibody function, you need check if the pretrained model are loaded successfully.
-  e.g. The cdrl3 pretrained model is not loaded:
+  e.g. The cdrl3 pretrained model is not loaded into "BCR_V_BERT/model_pretrained" directory:
     ```r
     > light_chain_results <- predict_public_antibody(data, model = "cdrl3", python_env = "public")
     Error in py_run_string_impl(code, local, convert) : 
       FileNotFoundError: [Errno 2] No such file or directory: '/Users/XXX/anaconda3/envs/r-py-env/lib/python3.9/site-packages/BCR_V_BERT-1.0.0-py3.9.egg/BCR_V_BERT/model_pretrained/cdrl3/v_vocab.npy'
     ```
+    
   e.g. The BCR_V_BERT and PubBCRPredictor packages are not installed successfully:
     ```r
     Error in py_run_string_impl(code, local,convert)
