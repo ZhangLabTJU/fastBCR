@@ -247,8 +247,20 @@ import torch
 from PubBCRPredictor import PubBCRPredictor_Runner, MLP
 from BCR_V_BERT import BCR_V_BERT_Runner
 
+def vgene_process(vgene):
+    if '*' in vgene:
+        vgene = vgene.split('*')[0]
+    if '/OR' in vgene:
+        vgene = vgene.replace('/OR','')
+    if 'S' in vgene:
+        vgene = vgene.replace('S','-')
+    if vgene.count('-')>1:
+        vgene = vgene.split('-')[0]+'-'+vgene.split('-')[1]
+    return vgene
+
 data['cdr'] = data['cdr1'] + '|' + data['cdr2'] + '|' + data['cdr3']
 sequence = data['cdr'].values
+data['vgene']= data['vgene'].apply(vgene_process)
 vgenes = data['vgene'].values
 cdr3s = data['cdr3'].values
 
