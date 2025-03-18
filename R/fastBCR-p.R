@@ -106,11 +106,12 @@ BCR.clusters.p<- function(input, cluster_thre = 3,
     if (length(filt.loc) != 0) {
       bcr_clusters <- bcr_clusters[-filt.loc]
     }
-
-    for (i in 1:length(bcr_clusters)) {
-      tmp.bcr_clusters <- bcr_clusters[[i]]
-      tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
-      bcr_clusters[[i]] <- tmp.bcr_clusters
+    if(length(bcr_clusters) != 0){
+      for (i in 1:length(bcr_clusters)) {
+        tmp.bcr_clusters <- bcr_clusters[[i]]
+        tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
+        bcr_clusters[[i]] <- tmp.bcr_clusters
+      }
     }
 
   }
@@ -246,15 +247,26 @@ import torch
 from PubBCRPredictor import PubBCRPredictor_Runner, MLP
 from BCR_V_BERT import BCR_V_BERT_Runner
 
-data = r.data
+def vgene_process(vgene):
+    if '*' in vgene:
+        vgene = vgene.split('*')[0]
+    if '/OR' in vgene:
+        vgene = vgene.replace('/OR','')
+    if 'S' in vgene:
+        vgene = vgene.replace('S','-')
+    if vgene.count('-')>1:
+        vgene = vgene.split('-')[0]+'-'+vgene.split('-')[1]
+    return vgene
+
 data['cdr'] = data['cdr1'] + '|' + data['cdr2'] + '|' + data['cdr3']
 sequence = data['cdr'].values
+data['vgene']= data['vgene'].apply(vgene_process)
 vgenes = data['vgene'].values
 cdr3s = data['cdr3'].values
 
 model_name = model
 if model == 'cdrh':
-    bcr_v_bert = BCR_V_BERT_Runner(model='cdrh_old')
+    bcr_v_bert = BCR_V_BERT_Runner(model='cdrh')
     pub_runner = PubBCRPredictor_Runner(model='cdrh')
     feature = bcr_v_bert.embed(sequence,vgenes)
 

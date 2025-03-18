@@ -8,8 +8,8 @@
 
 ## Update Notes
 
-**Date:** January 2025  
-**Version:** 1.2.0  
+**Date:** March 2025  
+**Version:** 1.2.1  
 
 **New Features:**
 - **Integration with fastBCR-p**  
@@ -25,7 +25,7 @@
 - **Backward Compatibility**  
   Existing functions remain unaffected, ensuring seamless integration without disrupting current workflows.
 x1
-**For detailed documentation and usage guidelines on fastBCR-p**, please refer to the [fastBCR-p README](https://github.com/ZhangLabTJU/fastBCR/blob/main/example/example_paired/README.md). It includes installation instructions, configuration details, example datasets, and output explanations.
+**For detailed documentation and usage guidelines on fastBCR-p**, please refer to the [fastBCR-p README](https://github.com/ZhangLabTJU/fastBCR/blob/main/README_fastBCR-p.md). It includes installation instructions, configuration details, example datasets, and output explanations.
 
 
 ## Overview
