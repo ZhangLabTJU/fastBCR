@@ -51,7 +51,7 @@ Now you can install fastBCR like so:
 if(!require(devtools)){
   install.packages("devtools")
 }
-devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.2.1")
+devtools::install_github("ZhangLabTJU/fastBCR")
 ```
 
 ## Usage
