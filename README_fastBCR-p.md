@@ -31,7 +31,7 @@ fastBCR-p is an improved version of fastBCR designed for paired data. To use fas
 
 ### Installation of fastBCR
 
-> :warning:  **R >= 4.1 and fastBCR >= 1.2 is required**  :warning:
+> :warning:  **R >= 4.1 and fastBCR >= 1.2.1 is required**  :warning:
 
 
 Before installing fastBCR, you need to download the dependency packages
