@@ -4,13 +4,21 @@
 \alias{data.pro}
 \title{Function: The first step of fastBCR to process raw data.}
 \usage{
-data.pro(raw_data, count_col_name = NA, count_filter_thre = NA)
+data.pro(
+  raw_data,
+  productive_only = FALSE,
+  count_col_name = NA,
+  count_filter_thre = NA
+)
 }
 \arguments{
 \item{raw_data}{Raw data for preprocessed.
 Inference of clonal familes requires following columns to be present in the raw_data: "v_call" (V gene with or without allele), "j_call" (J gene with or without allele) and "junction_aa" (amino acid translation of the junction).
 The "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons) column is needed for phylogenetic tree construction and SHM-related analysis
 The "c_call" (constant region gene with or without allele) column is needed for isotype-related analysis.}
+
+\item{productive_only}{Whether to filter out unproductive sequences based on the "productive" information in the raw data.
+Defaults to "FALSE".}
 
 \item{count_col_name}{The column name for the count of each sequence.
 Defaults to "NA" which means the original count of the sequence is not taken into account.}
@@ -25,7 +33,10 @@ Processed data as input for clonal family inference
 The input data needs to contain essential columns including "v_call" (V gene with or without allele), "j_call" (J gene with or without allele) and "junction_aa" (amino acid translation of the junction).
 Only productive sequences whose junction amino acid lengths between 9 and 26 are reserved. You can also filter clonotype sequence with low frequency to reduce sequencing errors to some extent.
 Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
+The column "clonotype_index" is the index of each clonotype.
 The column "clonotype_count" is the count of each clonotype.
 The column "clone_count" is the sum of the counts (calculated based on "count_col_name" parameter) of the sequences belonging to each clonotype.
 The column "clone_fre" is the frequency version of "clone_count".
+The column "raw_index" is the index of each clonotype representative sequence in raw data.
+The column "raw_indices" is the indices of all sequences with each clonotype in raw data.
 }

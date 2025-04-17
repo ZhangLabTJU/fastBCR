@@ -6,15 +6,18 @@
 \usage{
 BCR.cluster.unfilter(
   input,
-  cluster_thre = 3,
+  min_depth_thre = 3,
+  max_depth_thre = 1000,
   overlap_thre = 0.1,
-  paired = TRUE
+  paired = FALSE
 )
 }
 \arguments{
 \item{input}{Processed data}
 
-\item{cluster_thre}{Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
+\item{min_depth_thre}{Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
+
+\item{max_depth_thre}{Maximum clustering criteria. Defaluts to 1000.}
 
 \item{overlap_thre}{The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.}
 

@@ -4,10 +4,18 @@
 \alias{data.preprocess}
 \title{Function: Preprocessing of raw data to meet the input requirements for clonal family inference}
 \usage{
-data.preprocess(data_list, count_col_name = NA, count_filter_thre = NA)
+data.preprocess(
+  raw_data_list,
+  productive_only = FALSE,
+  count_col_name = NA,
+  count_filter_thre = NA
+)
 }
 \arguments{
-\item{data_list}{A list where each element is the raw data named after its filename}
+\item{raw_data_list}{A list where each element is the raw data named after its filename}
+
+\item{productive_only}{Whether to filter out unproductive sequences based on the "productive" information in the raw data.
+Defaults to "FALSE".}
 
 \item{count_col_name}{The column name for the count of each sequence.
 Defaults to "NA" which means the original count of the sequence is not taken into account.}

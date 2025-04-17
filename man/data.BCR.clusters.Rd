@@ -6,16 +6,19 @@
 \usage{
 data.BCR.clusters(
   pro_data_list,
-  cluster_thre = 3,
+  min_depth_thre = 3,
+  max_depth_thre = 1000,
   overlap_thre = 0.1,
   consensus_thre = 0.8,
-  paired = TRUE
+  paired = FALSE
 )
 }
 \arguments{
 \item{pro_data_list}{A list where each element is the preprocessed data named after its filename}
 
-\item{cluster_thre}{Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
+\item{min_depth_thre}{Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
+
+\item{max_depth_thre}{Maximum clustering criteria. Defaults to 1000.}
 
 \item{overlap_thre}{The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.}
 

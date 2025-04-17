@@ -4,7 +4,12 @@
 \alias{paired.preprocess}
 \title{Function: Preprocess datasets and check required columns of paired data}
 \usage{
-paired.preprocess(paired_raw_data_list)
+paired.preprocess(
+  paired_raw_data_list,
+  productive_only = FALSE,
+  count_col_name = NA,
+  count_filter_thre = NA
+)
 }
 \arguments{
 \item{paired_raw_data_list}{A list of paired data.}
