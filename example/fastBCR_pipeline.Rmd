@@ -4,19 +4,15 @@ output: html_notebook
 ---
 
 ```{r setup, include = TRUE}
-# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.1.zip and set the folder as working directory before running pipeline.
+# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.3.0.zip and set the folder as working directory before running pipeline.
 # knitr::opts_knit$set(root.dir = "THE/PATH/TO/FASTBCR/FOLDER")
-knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.1") # Replace with your path.
-```
+knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.3.0") # Replace with your path.
 
-```{r}
+# Install and library fastBCR
 if(!require(devtools)){
   install.packages("devtools") # If not already installed
 }
-devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.1")
-```
-
-```{r}
+devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.3.0")
 library(fastBCR)
 ```
 
@@ -29,8 +25,10 @@ HC_folder_path <- "example/HC"
 # Load files from "COVID_folder_path"/"HC_folder_path" into list.
 # The storage format of data can be in "csv", "tsv", or "Rdata" format.
 # The compressed files in the above storage format in "7zip", "cab", "cpio", "iso9660", "lha", "mtree", "shar", "rar", "raw", "tar", "xar", "zip", "warc" format can also be read in.
-COVID_raw_data_list <- data.load(folder_path = COVID_folder_path, storage_format = "csv")
-HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "csv")
+COVID_raw_data_list <- data.load(folder_path = COVID_folder_path,
+                                 storage_format = "csv")
+HC_raw_data_list <- data.load(folder_path = HC_folder_path,
+                              storage_format = "csv")
 ```
 
 ```{r}
@@ -40,6 +38,7 @@ HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "cs
 # The "junction" (junction region nucleotide sequence, where the junction is defined as the CDR3 plus the two flanking conserved codons) column is needed for phylogenetic tree construction and SHM-related analysis.
 # The "c_call" (constant region gene with or without allele) column is needed for isotype-related analysis.
 # During data preprocessing, only productive sequences whose junction amino acid lengths between 9 and 26 are reserved.
+# The "productive_only" parameter determines whether to filter out unproductive sequences based on the "productive" information in the raw data.
 # The "count_col_name" parameter represents the column name for the count of each sequence.
 # It defaults to "NA" which means the original count of the sequence is not taken into account.
 # Sequences with the same "v_call", "j_call" and "junction_aa" are considered to be the same clonotype and are merged into one row in processed data.
@@ -48,24 +47,46 @@ HC_raw_data_list <- data.load(folder_path = HC_folder_path, storage_format = "cs
 # The column "clone_fre" is the frequency version of "clone_count".
 # The information of the sequence with the highest count in each clonotype is retained.
 # The list "index_match" saves the original indexes of sequences for each clonotype.
-COVID_pro_data_list <- data.preprocess(data_list = COVID_raw_data_list, count_col_name = "consensus_count")
-HC_pro_data_list <- data.preprocess(data_list = HC_raw_data_list, count_col_name = "consensus_count")
+COVID_pro_data_list <- data.preprocess(raw_data_list = COVID_raw_data_list,
+                                       productive_only = TRUE,
+                                       count_col_name = "consensus_count")
+HC_pro_data_list <- data.preprocess(raw_data_list = HC_raw_data_list,
+                                    productive_only = TRUE,
+                                    count_col_name = "consensus_count")
 ```
 
 ```{r}
 ## 3. BCR clonal family inference
 # Fast clonal family inference from preprocessed data.
-# The "cluster_thre" parameter represents minimal clustering criteria (minimum number of sequences needed to form a cluster) and defaults to 3.
-# For high efficiency, the "cluster_thre" is increased by 1 for every 100,000 entries of input data.
+# The "min_depth_thre" parameter represents minimal clustering criteria (minimum number of sequences needed to form a cluster) and defaults to 3.
+# For high efficiency, the "min_depth_thre" is increased by 1 for every 100,000 entries of input data.
+# The "max_depth_thre" parameter represents maximum clustering criteria (maxiumu number of sequences allowed within a cluster) and defaults to 1000.
 # The "overlap_thre" parameter represents overlap coefficient threshold for merging two clusters, selectable range (0,1) and defaults to 0.1.
 # Lower "overlap_thre" may lead to overclustering while higher thresholds may lead to the split of clonal families.
 # The "consensus_thre" parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
 # A higher "consensus_thre" means stricter inference of the cluster.
-COVID_clusters_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
-HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8)
+COVID_cluster_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list,
+                                        min_depth_thre = 3,
+                                        max_depth_thre = 1000,
+                                        overlap_thre = 0.1,
+                                        consensus_thre = 0.8)
+HC_cluster_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list,
+                                     min_depth_thre = 3,
+                                     max_depth_thre = 1000,
+                                     overlap_thre = 0.1,
+                                     consensus_thre = 0.8)
 ```
 
-```{r, fig.height = 8, fig.width = 5}
+```{r}
+## 4. BCR clonal family backtrack
+# Backtrack the original information from the raw data based on the results of the clusters
+COVID_backtrack_cluster_list <- data.clusters.backtrack(raw_data_list = COVID_raw_data_list,
+                                                        clusters_list = COVID_cluster_list)
+HC_backtrack_cluster_list <- data.clusters.backtrack(raw_data_list = HC_raw_data_list,
+                                                     clusters_list = HC_cluster_list)
+```
+
+```{r, fig.height = 14, fig.width = 5}
 ### Downstream analysis
 ## 1. Single cluster analysis
 ## 1.1 Conserved motifs distribution
@@ -75,16 +96,18 @@ HC_clusters_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list, cluster_
 # The parameter "raw_data" is the raw data which the clonal families inferred from and defaults to "NA".
 # It is needed if you want to plot the MSA of 'DNA' sequences.
 # fastBCR will retrieve all the DNA sequences, which can be multiple sequences due to the degeneracy of codons, that correspond to the amino acid sequence of each clonotype from the raw data
-COVID_01_clusters <- COVID_clusters_list$COVID_01
-HC_01_clusters <- HC_clusters_list$HC_01
+COVID_01_clusters <- COVID_cluster_list$COVID_01
+HC_01_clusters <- HC_cluster_list$HC_01
 msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
-msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA", raw_data = COVID_raw_data_list$COVID_01)
+msa.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA", 
+         raw_data = COVID_raw_data_list$COVID_01)
 ```
 ```{r, fig.height = 2.5, fig.width = 14}
 ## 1.2 Sequence logo
 # Visualization of sequence logo of junction sequences within a cluster.
 seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "AA")
-seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA", raw_data = COVID_raw_data_list$COVID_01)
+seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA",
+             raw_data = COVID_raw_data_list$COVID_01)
 ```
 
 ```{r}
@@ -95,7 +118,9 @@ seqlogo.plot(bcr_clusters = COVID_01_clusters, index = 200, type = "DNA", raw_da
 # ClonalTree returns two files in the "ClonalTree/Examples/output" folder.
 # ClonalFamily_index.nk: the reconstructed BCR lineage tree in newick format.
 # ClonalFamily_index.nk.csv: a table in csv format, containing the parent relationship and cost.
-clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200, raw_data = COVID_raw_data_list$COVID_01, python_path = "/Users/wangkaixuan/anaconda3/bin/python") # Replace with your path
+clonal.tree.generation(bcr_clusters = COVID_01_clusters, index = 200,
+                       raw_data = COVID_raw_data_list$COVID_01,
+                       python_path = "/Users/wangkaixuan/anaconda3/bin/python") # Replace with your path
 # You can use the clonal.tree.plot() function to visualize the evolutionary tree in R.
 # The consensus sequence of the cluster is used as the root node of the tree.
 # Orange points represent nodes and blue points represent tips.
@@ -117,15 +142,19 @@ CSR.cluster.plot(bcr_clusters = COVID_01_clusters, index = 50)
 ## 2.1 Classification of clustered and unclustered sequences
 # Merge all the clustered sequences in each sample into "clustered_seqs".
 # Merge all the unclustered sequences in each sample into "unclustered_seqs".
-COVID_seqs_list <- Clustered.seqs(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list)
-HC_seqs_list <- Clustered.seqs(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list)
+COVID_seqs_list <- Clustered.seqs(pro_data_list = COVID_pro_data_list,
+                                  clusters_list = COVID_cluster_list)
+HC_seqs_list <- Clustered.seqs(pro_data_list = HC_pro_data_list,
+                               clusters_list = HC_cluster_list)
 ```
 
 ```{r}
 ## 2.2 Summary of clusters from a sample
 # Summarize the number of clusters, the average size of clusters and the proportion of clustered sequences.
-COVID_clusters_summary <- Clusters.summary(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list)
-HC_clusters_summary <- Clusters.summary(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list)
+COVID_clusters_summary <- Clusters.summary(pro_data_list = COVID_pro_data_list,
+                                           clusters_list = COVID_cluster_list)
+HC_clusters_summary <- Clusters.summary(pro_data_list = HC_pro_data_list,
+                                        clusters_list = HC_cluster_list)
 COVID_01_summary <- COVID_clusters_summary$COVID_01
 print('Summary of COVID_01:')
 print(COVID_01_summary)
@@ -139,8 +168,10 @@ print(HC_01_summary)
 # Point diagram showing clusters from a sample where a circle represents a cluster.
 # The size and color of the circle represents the size of the cluster.
 # The parameter "index" represents the index of the sample for visualization.
-Clusters.visualization(pro_data_list = COVID_pro_data_list, clusters_list = COVID_clusters_list, index = 1)
-Clusters.visualization(pro_data_list = HC_pro_data_list, clusters_list = HC_clusters_list, index = 1)
+Clusters.visualization(pro_data_list = COVID_pro_data_list,
+                       clusters_list = COVID_cluster_list, index = 1)
+Clusters.visualization(pro_data_list = HC_pro_data_list,
+                       clusters_list = HC_cluster_list, index = 1)
 ```
 
 ```{r}
@@ -159,19 +190,23 @@ pie.freq.plot(clustered_seqs = HC_01_clustered_seqs, colname = "v_call")
 # All the clustered/unclustered sequences from multiple samples in a group can be merged.
 COVID_all_clustered_seqs <- NULL
 for(i in 1:length(COVID_seqs_list$clustered_seqs)){
-  COVID_all_clustered_seqs <- rbind(COVID_all_clustered_seqs, COVID_seqs_list$clustered_seqs[[i]])
+  COVID_all_clustered_seqs <- rbind(COVID_all_clustered_seqs,
+                                    COVID_seqs_list$clustered_seqs[[i]])
 }
 COVID_all_unclustered_seqs <- NULL
 for(i in 1:length(COVID_seqs_list$unclustered_seqs)){
-  COVID_all_unclustered_seqs <- rbind(COVID_all_unclustered_seqs, COVID_seqs_list$unclustered_seqs[[i]])
+  COVID_all_unclustered_seqs <- rbind(COVID_all_unclustered_seqs,
+                                      COVID_seqs_list$unclustered_seqs[[i]])
 }
 HC_all_clustered_seqs <- NULL
 for(i in 1:length(HC_seqs_list$clustered_seqs)){
-  HC_all_clustered_seqs <- rbind(HC_all_clustered_seqs, HC_seqs_list$clustered_seqs[[i]])
+  HC_all_clustered_seqs <- rbind(HC_all_clustered_seqs,
+                                 HC_seqs_list$clustered_seqs[[i]])
 }
 HC_all_unclustered_seqs <- NULL
 for(i in 1:length(HC_seqs_list$unclustered_seqs)){
-  HC_all_unclustered_seqs <- rbind(HC_all_unclustered_seqs, HC_seqs_list$unclustered_seqs[[i]])
+  HC_all_unclustered_seqs <- rbind(HC_all_unclustered_seqs,
+                                   HC_seqs_list$unclustered_seqs[[i]])
 }
 pie.freq.plot(clustered_seqs = COVID_all_clustered_seqs, colname = "v_call")
 pie.freq.plot(clustered_seqs = HC_all_clustered_seqs, colname = "v_call")
@@ -228,12 +263,15 @@ CoV_AbDab <- read.csv("example/CoV-AbDab_130623.csv")
 # The parameter "species" can be "Mouse" or "Human". Defaults to "Human".
 # The parameter "maxDist" represents the maximum distance allowed for matching when the argument "method" is "hamming" or "lv". Defaults to "NA".
 # example to perfect match
-human_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = NA, maxDist = NA, species = "Human")
+human_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters,AbDab = CoV_AbDab,
+                                 method = NA, maxDist = NA, species = "Human")
 head(human_perfect_match)
 # example with perfect match in "Mouse" species
-mouse_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = NA, maxDist = NA, species = "Mouse")
+mouse_perfect_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab,
+                                 method = NA, maxDist = NA, species = "Mouse")
 # example with fuzzy matching with "hamming" method and max distance of 1
-human_hamming_1_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab, method = "hamming", maxDist = 1, species = "Human")
+human_hamming_1_match <- NAb.query(bcr_clusters = COVID_01_clusters, AbDab = CoV_AbDab,
+                                   method = "hamming", maxDist = 1, species = "Human")
 ```
 
 ```{r, fig.height = 2.5, fig.width = 12}
@@ -289,8 +327,8 @@ len.group.plot(group1_all_clustered_seqs = COVID_all_clustered_seqs, group1_labe
 ## 3.3 Diversity analysis
 ## 3.3.1 Number and size of clusters
 # Bubble plot showing the size and number of clusters between two groups.
-clu.size.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
-              clusters_list2 = HC_clusters_list, group2_label = "HC")
+clu.size.plot(clusters_list1 = COVID_cluster_list, group1_label = "COVID-19",
+              clusters_list2 = HC_cluster_list, group2_label = "HC")
 ```
 
 ```{r, fig.height = 2, fig.width = 2.2}
@@ -298,16 +336,41 @@ clu.size.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
 # Tcf20 score represents the proportion of sequences attributed to the top 20 clonal families out of the total number of BCR sequences.
 # Boxplot showing the Tcf20 scores between two groups.
 # Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
-Tcf20.plot(clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
-           clusters_list2 = HC_clusters_list, group2_label = "HC")
+Tcf20.plot(clusters_list1 = COVID_cluster_list, group1_label = "COVID-19",
+           clusters_list2 = HC_cluster_list, group2_label = "HC")
 ```
 
 ```{r}
-## 3.4 Somatic hypermutation (SHM) analysis
+### 3.4 NAb ratio calculation
+## 3.4.1 Load the public antibody database to get the information of neutralizing antibody (NAb) sequences.
+# Here is an example of the Coronavirus Antibody Database (CoV-AbDab).
+CoV_AbDab <- read.csv("example/CoV-AbDab_130623.csv")
+
+## 3.4.2 NAb ratio calculation
+# NAb ratio is established as an indicator of the proportional prevalence of neutralizing antibody sequences within expanded clonalfamilies in each sample.
+# It is defined as the fraction of the number of NAb sequences within clonal families to the total number of NAb sequences present in each sample.
+# NAb sequences are queried using NAb.query() function where the parameter "method" represents the CDRH3 matching method.
+# It can be "NA" for perfect match, "hamming" for hamming distance or "lv" for Levenshtein distance. Defaults to "NA".
+# The parameter "species" can be "Mouse" or "Human". Defaults to "Human".
+# The parameter "maxDist" represents the maximum distance allowed for matching when the argument "method" is "hamming" or "lv". Defaults to "NA".
+NAb_ratio_df <- NAb.ratio.calculation(pro_data_list1 = COVID_pro_data_list, clusters_list1 = COVID_cluster_list, group1_label = "COVID-19",
+                                      pro_data_list2 = HC_pro_data_list, clusters_list2 = HC_cluster_list, group2_label = "HC",
+                                      AbDab = CoV_AbDab, method = NA, maxDist = NA, species = "Human")
+
+```
+
+```{r, fig.height = 2, fig.width = 2.2}
+# Boxplot showing the NAb ratios between the two groups.
+# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
+NAb.ratio.plot(NAb_ratio_df)
+```
+
+```{r}
+## 3.5 Somatic hypermutation (SHM) analysis
 # Calculate the average SHM ratio of all clusters in each sample.
 # The calculation of SHM ratios may take a while.
-SHM_df = SHM.calculation(clusters_list1 = COVID_clusters_list, raw_data_list1 = COVID_raw_data_list, group1_label = "COVID-19",
-                         clusters_list2 = HC_clusters_list, raw_data_list2 = HC_raw_data_list, group2_label = "HC")
+SHM_df = SHM.calculation(clusters_list1 = COVID_cluster_list, raw_data_list1 = COVID_raw_data_list, group1_label = "COVID-19",
+                         clusters_list2 = HC_cluster_list, raw_data_list2 = HC_raw_data_list, group2_label = "HC")
 ```
 
 ```{r, fig.height = 2, fig.width = 2.2}
@@ -319,8 +382,8 @@ SHM.plot(SHM_df = SHM_df)
 ```{r}
 # Calculate the SHM ratios of clustered sequences in different isotypes in each sample.
 # The calculation of SHM ratios may take a while.
-SHM_iso_df = SHM.iso.calculation(clusters_list1 = COVID_clusters_list, raw_data_list1 = COVID_raw_data_list, group1_label = "COVID-19",
-                                 clusters_list2 = HC_clusters_list, raw_data_list2 = HC_raw_data_list, group2_label = "HC")
+SHM_iso_df = SHM.iso.calculation(clusters_list1 = COVID_cluster_list, raw_data_list1 = COVID_raw_data_list, group1_label = "COVID-19",
+                                 clusters_list2 = HC_cluster_list, raw_data_list2 = HC_raw_data_list, group2_label = "HC")
 ```
 
 ```{r, fig.height = 2.5, fig.width = 5}
@@ -328,29 +391,3 @@ SHM_iso_df = SHM.iso.calculation(clusters_list1 = COVID_clusters_list, raw_data_
 # Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
 SHM.iso.plot(SHM_iso_df = SHM_iso_df)
 ```
-
-```{r}
-### 3.5 NAb ratio calculation
-## 3.5.1 Load the public antibody database to get the information of neutralizing antibody (NAb) sequences.
-# Here is an example of the Coronavirus Antibody Database (CoV-AbDab).
-CoV_AbDab <- read.csv("example/CoV-AbDab_130623.csv")
-
-## 3.5.2 NAb ratio calculation
-# NAb ratio is established as an indicator of the proportional prevalence of neutralizing antibody sequences within expanded clonalfamilies in each sample.
-# It is defined as the fraction of the number of NAb sequences within clonal families to the total number of NAb sequences present in each sample.
-# NAb sequences are queried using NAb.query() function where the parameter "method" represents the CDRH3 matching method.
-# It can be "NA" for perfect match, "hamming" for hamming distance or "lv" for Levenshtein distance. Defaults to "NA".
-# The parameter "species" can be "Mouse" or "Human". Defaults to "Human".
-# The parameter "maxDist" represents the maximum distance allowed for matching when the argument "method" is "hamming" or "lv". Defaults to "NA".
-NAb_ratio_df <- NAb.ratio.calculation(pro_data_list1 = COVID_pro_data_list, clusters_list1 = COVID_clusters_list, group1_label = "COVID-19",
-                                      pro_data_list2 = HC_pro_data_list, clusters_list2 = HC_clusters_list, group2_label = "HC",
-                                      AbDab = CoV_AbDab, method = NA, maxDist = NA, species = "Human")
-
-```
-
-```{r, fig.height = 2, fig.width = 2.2}
-# Boxplot showing the NAb ratios between the two groups.
-# Statistical comparisons are carried out by the two-sided Wilcoxon rank-sum test.
-NAb.ratio.plot(NAb_ratio_df)
-```
-
