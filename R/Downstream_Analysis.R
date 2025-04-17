@@ -791,11 +791,8 @@ msa.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = NA) 
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
   } else if (type == "DNA") {
-    index_match <- bcr_clusters[[index]]$index_match
-    names(index_match) <- NULL
-    raw_index <- unlist(index_match)
-    productive_data <- data.productive(raw_data)
-    seqs_aa0 <- unique(productive_data$junction[raw_index])
+    raw_indices <- as.numeric(unique(unlist(strsplit(paste(bcr_clusters[[index]]$raw_indices, collapse = ','), ','))))
+    seqs_aa0 <- raw_data$junction[raw_indices]
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::DNAStringSet(seqs_aa0), "ClustalW")
     sink()
@@ -846,11 +843,8 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
     seqs_aa <- as.character(attributes(MSAalign_aa)$unmasked)
     SEQs_aa <- Biostrings::AAStringSet(seqs_aa)
   } else if (type == "DNA") {
-    index_match <- bcr_clusters[[index]]$index_match
-    names(index_match) <- NULL
-    raw_index <- unlist(index_match)
-    productive_data <- data.productive(raw_data)
-    seqs_aa0 <- unique(productive_data$junction[raw_index])
+    raw_indices <- as.numeric(unique(unlist(strsplit(paste(bcr_clusters[[index]]$raw_indices, collapse = ','), ','))))
+    seqs_aa0 <- raw_data$junction[raw_indices]
     sink("default matrix.txt")
     MSAalign_aa <- msa::msa(Biostrings::DNAStringSet(seqs_aa0), "ClustalW")
     sink()
@@ -902,14 +896,9 @@ seqlogo.plot <- function(bcr_clusters, index, type = c("AA", "DNA"), raw_data = 
 #'
 #' @export
 clonal.tree.generation <- function(bcr_clusters, index, raw_data, python_path) {
-  productive_data <- data.productive(raw_data)
-  index_match_list <- bcr_clusters[[index]]$index_match
-  all_ids <- c()
-  all_junctions <- c()
-  for (index_match in index_match_list){
-    all_ids <- c(all_ids, productive_data[index_match,]$sequence_id)
-    all_junctions <- c(all_junctions, productive_data[index_match,]$junction)
-  }
+  raw_indices <- as.numeric(unique(unlist(strsplit(paste(bcr_clusters[[index]]$raw_indices, collapse = ','), ','))))
+  all_ids <- raw_data$sequence_id[raw_indices]
+  all_junctions <- raw_data$junction[raw_indices]
   clonal_tree_df <- data.frame(sequence_id = all_ids, 
                                junction = all_junctions)
   all_junctions <- factor(all_junctions, levels = unique(all_junctions))
@@ -974,12 +963,9 @@ clonal.tree.plot <- function(nk_path) {
 SHM.clu <- function(bcr_clusters, raw_data) {
   n <- length(bcr_clusters)
   ratio.lis <- rep(0, n)
-  productive_data <- data.productive(raw_data)
   for (i in 1:n) {
-    index_match <- bcr_clusters[[i]]$index_match
-    names(index_match) <- NULL
-    raw_index <- unlist(index_match)
-    seqs <- unique(productive_data$junction[raw_index])
+    raw_indices <- as.numeric(unique(unlist(strsplit(paste(bcr_clusters[[i]]$raw_indices, collapse = ','), ','))))
+    seqs <- raw_data$junction[raw_indices]
     seq.l <- max(nchar(seqs))
     nn <- length(seqs)
     clu.l <- seq.l * nn
@@ -996,14 +982,11 @@ SHM.iso <- function(bcr_clusters, raw_data) {
   isotypes <- c("IGHD", "IGHM", "IGHA", "IGHG")
   all.dist <- rep(0, 4)
   all.len <- rep(0, 4)
-  productive_data <- data.productive(raw_data)
   for (i in 1:n) {
     bcr_cluster <- bcr_clusters[[i]]
     iso <- substr(bcr_cluster$c_call, 1, 4)
-    index_match <- bcr_cluster$index_match
-    names(index_match) <- NULL
-    raw_index <- unlist(index_match)
-    seqs <- unique(productive_data$junction[raw_index])
+    raw_indices <- as.numeric(unique(unlist(strsplit(paste(bcr_clusters[[index]]$raw_indices, collapse = ','), ','))))
+    seqs <- raw_data$junction[raw_indices]
 
     for (is in 1:4) {
       tmp.loc <- which(iso == isotypes[is])

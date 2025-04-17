@@ -84,7 +84,7 @@ consensus_scores <- function(bcr_clusters) {
   return(con.lis)
 }
 
-pre_clustering <- function(L, L_sati, vj.seqs, cluster_thre){
+pre_clustering <- function(L, L_sati, vj.seqs, min_depth_thre){
   pre_clusters <- NULL
   pc <- 1
   # first three k-mers
@@ -130,7 +130,7 @@ pre_clustering <- function(L, L_sati, vj.seqs, cluster_thre){
     k_mer.lis <- c(k_mer1, k_mer2, k_mer3, k_mer4, k_mer5, k_mer6)
     index <- rep(tmp.seqs$clonotype_index, times = 6)
     k_mer.fre <- sort(table(k_mer.lis), decreasing = T)
-    kk <- which(as.numeric(k_mer.fre) >= cluster_thre)
+    kk <- which(as.numeric(k_mer.fre) >= min_depth_thre)
     k_mer.clu <- names(k_mer.fre)[kk]
     empty.kmer <- which(k_mer.clu == "")
     if (length(empty.kmer) != 0) {
@@ -142,7 +142,7 @@ pre_clustering <- function(L, L_sati, vj.seqs, cluster_thre){
       indexs <- index[index.loc]
       indexs <- unique(indexs)
       tmp.loc <- which(tmp.seqs$clonotype_index %in% indexs)
-      if (length(tmp.loc) < cluster_thre) {
+      if (length(tmp.loc) < min_depth_thre) {
         next
       }
       tmp.dd <- tmp.seqs[tmp.loc, ]
@@ -157,7 +157,7 @@ pre_clustering <- function(L, L_sati, vj.seqs, cluster_thre){
       kmer.start.mode <- mean(as.numeric(names(which(tmp.table == tmp.max))))
 
       left <- which(abs(kmer.start - kmer.start.mode) < 1.5)
-      if (length(left) < cluster_thre) {
+      if (length(left) < min_depth_thre) {
         next
       }
       kmer.start <- kmer.start[left]
@@ -342,30 +342,36 @@ combine_pre_clusters <- function(bcr_clusters, sort_clusters, cc, overlap_thre){
 #' BCR clonal family inference consists of two steps, fast k-mer-based pre-clustering and optimized clustering, to infer clonal families fast and accurately.
 #'
 #' @param input Processed data
-#' @param cluster_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param min_depth_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param max_depth_thre Maximum clustering criteria. Defaluts to 1000. 
 #' @param overlap_thre The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.
 #' @param consensus_thre The consensus score threshold for filtering candidates. Defaluts to 0.8. A higher threshold means stricter inference of the cluster.
 #' @param paired If TRUE, select fastBCR-p to infer paired data.
 #'
 #' @return Clonal families inferred by fastBCR
 #' @export
-BCR.cluster <- function(input, cluster_thre = 3,
+BCR.cluster <- function(input,
+                        min_depth_thre = 3,
+                        max_depth_thre = 1000,
                         overlap_thre = 0.1,
                         consensus_thre = 0.8,
                         paired = FALSE) {
   if(paired){
-    bcr_clusters <- BCR.clusters.p(input, cluster_thre,
-                                         overlap_thre, consensus_thre)
+    bcr_clusters <- BCR.clusters.p(input,
+                                   min_depth_thre,
+                                   max_depth_thre,
+                                   overlap_thre,
+                                   consensus_thre)
   }
   else{
     bcr_clusters <- c()
-    cluster_thre <- cluster_thre + floor(nrow(input) / 1e+05)
+    min_depth_thre <- min_depth_thre + floor(nrow(input) / 1e+05)
 
     ### 1. Fast k-mer pre-clustering
     ## 1.1 VJ partition
     VJ <- paste(input$v_call, input$j_call, sep = "_")
     VJ_table <- sort(table(VJ), decreasing = T)
-    VJ_sati <- names(VJ_table)[which(as.numeric(VJ_table) >= cluster_thre)]
+    VJ_sati <- names(VJ_table)[which(as.numeric(VJ_table) >= min_depth_thre)]
     for (vj in 1:length(VJ_sati)) {
       tmp.vj <- VJ_sati[vj]
       vj.loc <- which(VJ == tmp.vj)
@@ -373,11 +379,11 @@ BCR.cluster <- function(input, cluster_thre = 3,
       # Length pre-clustering
       L <- nchar(vj.seqs$junction_aa)
       L_table <- sort(table(L), decreasing = T)
-      L_sati <- names(L_table)[which(as.numeric(L_table) >= cluster_thre)]
+      L_sati <- names(L_table)[which(as.numeric(L_table) >= min_depth_thre)]
       if (length(L_sati) == 0) next
 
       ## 1.2 k-mer clustering
-      pre_clusters <- pre_clustering(L, L_sati, vj.seqs, cluster_thre)
+      pre_clusters <- pre_clustering(L, L_sati, vj.seqs, min_depth_thre)
 
       ## 1.3 Merge clusters with same seed
       if (length(pre_clusters) == 0) next
@@ -405,14 +411,19 @@ BCR.cluster <- function(input, cluster_thre = 3,
     }
 
     if(length(bcr_clusters) != 0){
-      # 2.2 Filter candidates with low consensus score
+      # 2.2 Filter candidates with low consensus score or deep depth
       bcr_clusters <- Sort_clu(bcr_clusters)
-      con <- consensus_scores(bcr_clusters)
-      filt.loc <- which(con < consensus_thre)
-      if (length(filt.loc) != 0) {
-        bcr_clusters <- bcr_clusters[-filt.loc]
+      bcr_clusters_depth <- as.numeric(unlist(sapply(bcr_clusters, function(x) nrow(x))))
+      depth.filt.loc <- which(bcr_clusters_depth > max_depth_thre)
+      if (length(depth.filt.loc) != 0) {
+        bcr_clusters <- bcr_clusters[-depth.filt.loc]
       }
-
+      bcr_clusters_consensus <- consensus_scores(bcr_clusters)
+      consensus.filt.loc <- which(bcr_clusters_consensus < consensus_thre)
+      if (length(consensus.filt.loc) != 0) {
+        bcr_clusters <- bcr_clusters[-consensus.filt.loc]
+      }
+      
       for (i in 1:length(bcr_clusters)) {
         tmp.bcr_clusters <- bcr_clusters[[i]]
         tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
@@ -426,63 +437,157 @@ BCR.cluster <- function(input, cluster_thre = 3,
 #' Function: Fast clonal family inference from preprocessed data
 #'
 #' @param pro_data_list A list where each element is the preprocessed data named after its filename
-#' @param cluster_thre Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param min_depth_thre Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param max_depth_thre Maximum clustering criteria. Defaults to 1000. 
 #' @param overlap_thre The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.
 #' @param consensus_thre The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.
 #' @param paired If TRUE, select fastBCR-p to infer paired data.
 #'
 #' @return A list where each element is a list of clonal families inferred by fastBCR from a single sample
 #' @export
-data.BCR.clusters <- function(pro_data_list, cluster_thre = 3, overlap_thre = 0.1, consensus_thre = 0.8,
+data.BCR.clusters <- function(pro_data_list,
+                              min_depth_thre = 3,
+                              max_depth_thre = 1000,
+                              overlap_thre = 0.1,
+                              consensus_thre = 0.8,
                               paired = FALSE) {
-  if(paired){
-    BCR_clusters_list <- data.BCR.clusters.p(pro_data_list, cluster_thre,
-                                        overlap_thre, consensus_thre)
-  }
-  else{
     BCR_clusters_list <- list()
     pb <- utils::txtProgressBar(min = 0, max = length(pro_data_list), style = 3)
     for (i in seq_along(pro_data_list)) {
-      data <- pro_data_list[[i]]
+      pro_data <- pro_data_list[[i]]
       var_name <- names(pro_data_list)[i]
-      processed_data <- BCR.cluster(data, cluster_thre, overlap_thre, consensus_thre)
-      BCR_clusters_list[[var_name]] <- processed_data
+      cat("\nClustering for Sample", var_name)
+      if(paired){
+        BCR_clusters <- BCR.clusters.p(pro_data, min_depth_thre, max_depth_thre, overlap_thre, consensus_thre)
+      } else{
+        BCR_clusters <- BCR.cluster(pro_data, min_depth_thre, max_depth_thre, overlap_thre, consensus_thre)
+      }
+      if(is.null(pro_data)){
+        cat("\n", var_name, " found no cluster")
+        next
+      }
+      BCR_clusters <- singletons.backtrack(BCR_clusters, pro_data, min_depth_thre, max_depth_thre)
+      BCR_clusters_list[[var_name]] <- BCR_clusters
       setTxtProgressBar(pb, i)
     }
-
-    cat(paste0(
-      paste0("\nYou have clustered ", length(BCR_clusters_list), " samples\n"),
-      paste(paste0("Sample '", names(BCR_clusters_list), "' contains ", sapply(BCR_clusters_list, function(x) length(x)), " clonal families"), collapse = "\n")
-    ))
-
-  }
+  
+  cat(paste0(
+    paste0("\nYou have clustered ", length(BCR_clusters_list), " samples\n"),
+    paste(paste0("Sample '", names(BCR_clusters_list), "' contains ", sapply(BCR_clusters_list, function(x) length(x)), " clonal families"), collapse = "\n")
+  ))
+  
   return(BCR_clusters_list)
 }
+
+singletons.backtrack <- function(BCR_clusters, pro_data, min_depth_thre, max_depth_thre){
+  all_clustered_clonotype_index <- unique(unlist(sapply(BCR_clusters, function(x) x$clonotype_index)))
+  pro_data_clonotype_index <- as.numeric(pro_data$clonotype_index)
+  all_singleton_clonotype_index <- setdiff(pro_data_clonotype_index, all_clustered_clonotype_index)
+  all_singleton_raw_indices <- pro_data$raw_indices
+    
+  for (singleton_clonotype_index in all_singleton_clonotype_index){
+    singleton_raw_indices <- all_singleton_raw_indices[singleton_clonotype_index]
+    if(stringr::str_count(singleton_raw_indices, ",")+1 >= min_depth_thre & stringr::str_count(singleton_raw_indices, ",")+1 <= max_depth_thre){
+      singleton_cluster <- list(pro_data[singleton_clonotype_index, ])
+      BCR_clusters <- c(BCR_clusters, singleton_cluster)
+    }
+  }
+  
+  return(BCR_clusters)
+}
+
+#' Function: Backtrack clusters to original raw data
+#'
+#' This function maps clustered sequences back to their original raw data entries, 
+#' preserving sample-wise structure and providing summary statistics.
+#'
+#' @param raw_data_list A named list where each element contains raw sequence data 
+#'        for a single sample. Names should correspond to sample identifiers.
+#' @param clusters_list A parallel list where each element contains cluster assignments
+#'        for the corresponding sample in raw_data_list. Must have matching names/length.
+#'
+#' @return A named list with the same structure as input, where each sample contains
+#'         the original data annotated with cluster backtracking information.
+#' @export
+data.clusters.backtrack <- function(raw_data_list, clusters_list) {
+  # Initialize empty list to store backtracked clusters
+  backtrack_clusters_list <- list()
+  
+  # Create progress bar for tracking processing status
+  pb <- utils::txtProgressBar(min = 0, max = length(raw_data_list), style = 3)
+  
+  # Process each sample sequentially
+  for (i in seq_along(raw_data_list)) {
+    # Get current sample's raw data and cluster assignments
+    raw_data <- raw_data_list[[i]]
+    clusters <- clusters_list[[i]]
+    
+    # Preserve original sample name
+    var_name <- names(raw_data_list)[i]
+    
+    # Perform core backtracking operation (assumes cluster.backtrack() exists)
+    backtrack_clusters <- cluster.backtrack(raw_data, clusters)
+    
+    # Store results with original sample name
+    backtrack_clusters_list[[var_name]] <- backtrack_clusters
+    
+    # Update progress bar
+    setTxtProgressBar(pb, i)
+  }
+  
+  # Print summary statistics
+  cat(paste0(
+    paste0("\nYou have backtracked ", length(backtrack_clusters_list), " samples\n"),
+    paste(paste0("Sample '", names(backtrack_clusters_list), "' contains ", 
+                 sapply(backtrack_clusters_list, function(x) length(x)), 
+                 " clonal families"), 
+          collapse = "\n")
+  ))
+  
+  # Return the aggregated results
+  return(backtrack_clusters_list)
+}
+
+cluster.backtrack <- function(raw_data, clusters) {
+  backtrack_clusters <- list()
+  for(cluster in clusters){
+    raw_indice_list <- cluster[["raw_indices"]]
+    unique_raw_indice <- sort(as.numeric(unique(unlist(strsplit(paste(raw_indice_list, collapse = ','), ',')))))
+    backtrack_cluster <- raw_data[unique_raw_indice, ]
+    backtrack_clusters <- c(backtrack_clusters, list(backtrack_cluster))
+  }
+  
+  return(backtrack_clusters)
+}
+
 
 #' Function: The core step of fastBCR to infer clonal families without consensus filtering from processed data.
 #'
 #' @param input Processed data
-#' @param cluster_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param min_depth_thre Minimal clustering criteria. Defaluts to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param max_depth_thre Maximum clustering criteria. Defaluts to 1000.
 #' @param overlap_thre The overlap coefficient threshold for merging two clusters whose selectable range is (0,1). Defaluts to 0.1. Lower thresholds may lead to overclustering while higher may lead to split of clonal families.
 #' @param paired If TRUE, select fastBCR-p to infer paired data.
 #'
 #' @return Unfiltered clonal families inferred by fastBCR
 #' @export
-BCR.cluster.unfilter <- function(input, cluster_thre = 3,
+BCR.cluster.unfilter <- function(input, 
+                                 min_depth_thre = 3,
+                                 max_depth_thre = 1000,
                                  overlap_thre = 0.1,
                                  paired = FALSE){
   if(paired){
-    bcr_clusters <- BCR.clusters.unfilter.p(input, cluster_thre,
+    bcr_clusters <- BCR.clusters.unfilter.p(input, min_depth_thre,
                                    overlap_thre)
   }
   else{
     bcr_clusters <- c()
-    cluster_thre <- cluster_thre + floor(nrow(input) / 1e+05)
+    min_depth_thre <- min_depth_thre + floor(nrow(input) / 1e+05)
 
     # VJ partition
     VJ <- paste(input$v_call, input$j_call, sep = "_")
     VJ_table <- sort(table(VJ), decreasing = T)
-    VJ_sati <- names(VJ_table)[which(as.numeric(VJ_table) >= cluster_thre)]
+    VJ_sati <- names(VJ_table)[which(as.numeric(VJ_table) >= min_depth_thre)]
     for (vj in 1:length(VJ_sati)) {
       tmp.vj <- VJ_sati[vj]
       vj.loc <- which(VJ == tmp.vj)
@@ -490,11 +595,11 @@ BCR.cluster.unfilter <- function(input, cluster_thre = 3,
       # Length pre-clustering
       L <- nchar(vj.seqs$junction_aa)
       L_table <- sort(table(L), decreasing = T)
-      L_sati <- names(L_table)[which(as.numeric(L_table) >= cluster_thre)]
+      L_sati <- names(L_table)[which(as.numeric(L_table) >= min_depth_thre)]
       if (length(L_sati) == 0) next
 
       ### Fast k-mer pre-clustering
-      pre_clusters <- pre_clustering(L, L_sati, vj.seqs, cluster_thre)
+      pre_clusters <- pre_clustering(L, L_sati, vj.seqs, min_depth_thre)
 
       # Merge clusters with same seed
       if (length(pre_clusters) == 0) next
@@ -523,6 +628,11 @@ BCR.cluster.unfilter <- function(input, cluster_thre = 3,
 
     if(length(bcr_clusters) != 0){
       bcr_clusters <- Sort_clu(bcr_clusters)
+      bcr_clusters_depth <- as.numeric(unlist(sapply(bcr_clusters, function(x) nrow(x))))
+      depth.filt.loc <- which(bcr_clusters_depth > max_depth_thre)
+      if (length(depth.filt.loc) != 0) {
+        bcr_clusters <- bcr_clusters[-depth.filt.loc]
+      }
       for (i in 1:length(bcr_clusters)) {
         tmp.bcr_clusters <- bcr_clusters[[i]]
         tmp.bcr_clusters <- tmp.bcr_clusters[, -which(colnames(tmp.bcr_clusters) %in% c("mode", "loc", "len", "kmer"))]
