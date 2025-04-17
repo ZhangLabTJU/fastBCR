@@ -8,8 +8,8 @@
 
 ## Update Notes
 
-**Date:** March 2025  
-**Version:** 1.2.1  
+**Date:** April 2025  
+**Version:** 1.3.0  
 
 **New Features:**
 - **Integration with fastBCR-p**  

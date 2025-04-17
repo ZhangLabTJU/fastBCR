@@ -31,7 +31,7 @@ fastBCR-p is an improved version of fastBCR designed for paired data. To use fas
 
 ### Installation of fastBCR
 
-> :warning:  **R >= 4.1 and fastBCR >= 1.2.1 is required**  :warning:
+> :warning:  **R >= 4.1 and fastBCR >= 1.3.0 is required**  :warning:
 
 
 Before installing fastBCR, you need to download the dependency packages
@@ -89,25 +89,32 @@ library(fastBCR)
 Data preprocessing:
 ``` r
 # load paired dataset from PAIRED_folder_path
-PAIRED_folder_path <- "example/example_paired"
+Paired_folder_path <- "example/example_paired"
 # the sample datasets are csv files
-raw_sample_list <- data.load(folder_path = PAIRED_folder_path,
-                             storage_format = "csv")
+Paired_raw_sample_list <- data.load(folder_path = Paired_folder_path,
+                                    storage_format = "csv")
 # preprocess datasets and check required columns
-paired_sample_list <- paired.preprocess(raw_sample_list)
+Paired_pro_sample_list <- paired.preprocess(Paired_raw_sample_list,
+                                            productive_only = FALSE)
 
 ```
 
 ***2. Clonal family inferring:***
 ``` r
 # Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR sample list
-cluster_lists <- data.BCR.clusters(paired_sample_list, cluster_thre = 3,
-                                     overlap_thre = 0.1, consensus_thre = 0.8, 
-                                     paired = TRUE)
+Paired_cluster_list <- data.BCR.clusters(Paired_pro_sample_list, 
+                                        min_depth_thre = 3,
+                                        max_depth_thre = 1000,
+                                        overlap_thre = 0.1,
+                                        consensus_thre = 0.8, 
+                                        paired = TRUE)
 # Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR data
-cluster_list_1 <- BCR.cluster(paired_sample_list[[1]], cluster_thre = 3,
-                                 overlap_thre = 0.1, consensus_thre = 0.8, 
-                                 paired = TRUE)
+Paired_01_clusters <- BCR.cluster(Paired_pro_sample_list[[1]], 
+                                  min_depth_thre = 3,
+                                  max_depth_thre = 1000,
+                                  overlap_thre = 0.1,
+                                  consensus_thre = 0.8, 
+                                  paired = TRUE)
 ```
 
 ### 2. Public Classification Analysis:
