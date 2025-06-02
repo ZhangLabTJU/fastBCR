@@ -7,16 +7,20 @@
 data.BCR.clusters(
   pro_data_list,
   min_depth_thre = 3,
+  min_depth_thre_adjustment = TRUE,
   max_depth_thre = 1000,
   overlap_thre = 0.1,
   consensus_thre = 0.8,
-  paired = FALSE
+  paired = FALSE,
+  singletons_backtrack = TRUE
 )
 }
 \arguments{
 \item{pro_data_list}{A list where each element is the preprocessed data named after its filename}
 
-\item{min_depth_thre}{Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.}
+\item{min_depth_thre}{Minimal clustering criteria. Defaults to 3.}
+
+\item{min_depth_thre_adjustment}{If TRUE, the minimal clustering threshold is increased by 1 for every 100,000 entries of input data for high efficiency.}
 
 \item{max_depth_thre}{Maximum clustering criteria. Defaults to 1000.}
 
@@ -25,6 +29,8 @@ data.BCR.clusters(
 \item{consensus_thre}{The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.}
 
 \item{paired}{If TRUE, select fastBCR-p to infer paired data.}
+
+\item{singletons_backtrack}{If TRUE, backtracking singleton clonotypes that weren't clustered but have multiple sequences in raw data.}
 }
 \value{
 A list where each element is a list of clonal families inferred by fastBCR from a single sample
