@@ -13,7 +13,7 @@ if(!require(devtools)){
   install.packages("devtools") # If not already installed
 }
 devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.3.1")
-# library(fastBCR)
+library(fastBCR)
 ```
 
 ```{r}
