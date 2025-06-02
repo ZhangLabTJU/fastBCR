@@ -365,7 +365,6 @@ BCR.cluster <- function(input,
   }
   else{
     bcr_clusters <- c()
-    min_depth_thre <- min_depth_thre + floor(nrow(input) / 1e+05)
 
     ### 1. Fast k-mer pre-clustering
     ## 1.1 VJ partition
@@ -437,26 +436,36 @@ BCR.cluster <- function(input,
 #' Function: Fast clonal family inference from preprocessed data
 #'
 #' @param pro_data_list A list where each element is the preprocessed data named after its filename
-#' @param min_depth_thre Minimal clustering criteria. Defaults to 3. For high efficiency, the threshold is increased by 1 for every 100,000 entries of input data.
+#' @param min_depth_thre Minimal clustering criteria. Defaults to 3. 
+#' @param min_depth_thre_adjustment If TRUE, the minimal clustering threshold is increased by 1 for every 100,000 entries of input data for high efficiency.
 #' @param max_depth_thre Maximum clustering criteria. Defaults to 1000. 
 #' @param overlap_thre The overlap coefficient threshold for merging two clusters, selectable range (0,1). Defaults to 0.1. Lower thresholds may lead to overclustering while higher thresholds may lead to the split of clonal families.
 #' @param consensus_thre The consensus score threshold for filtering candidates. Defaults to 0.8. A higher threshold means stricter inference of the cluster.
 #' @param paired If TRUE, select fastBCR-p to infer paired data.
-#'
+#' @param singletons_backtrack If TRUE, backtracking singleton clonotypes that weren't clustered but have multiple sequences in raw data.
+#' 
 #' @return A list where each element is a list of clonal families inferred by fastBCR from a single sample
 #' @export
 data.BCR.clusters <- function(pro_data_list,
                               min_depth_thre = 3,
+                              min_depth_thre_adjustment = TRUE,
                               max_depth_thre = 1000,
                               overlap_thre = 0.1,
                               consensus_thre = 0.8,
-                              paired = FALSE) {
+                              paired = FALSE,
+                              singletons_backtrack = TRUE) {
+    
     BCR_clusters_list <- list()
     pb <- utils::txtProgressBar(min = 0, max = length(pro_data_list), style = 3)
     for (i in seq_along(pro_data_list)) {
       pro_data <- pro_data_list[[i]]
       var_name <- names(pro_data_list)[i]
       cat("\nClustering for Sample", var_name)
+      
+      if(min_depth_thre_adjustment){
+        min_depth_thre <- min_depth_thre + floor(nrow(pro_data) / 1e+05)
+      }
+      
       if(paired){
         BCR_clusters <- BCR.clusters.p(pro_data, min_depth_thre, max_depth_thre, overlap_thre, consensus_thre)
       } else{
@@ -466,7 +475,9 @@ data.BCR.clusters <- function(pro_data_list,
         cat("\n", var_name, " found no cluster")
         next
       }
-      BCR_clusters <- singletons.backtrack(BCR_clusters, pro_data, min_depth_thre, max_depth_thre)
+      if(singletons_backtrack){
+        BCR_clusters <- singletons.backtrack(BCR_clusters, pro_data, min_depth_thre, max_depth_thre)
+      }
       BCR_clusters_list[[var_name]] <- BCR_clusters
       setTxtProgressBar(pb, i)
     }
@@ -479,7 +490,7 @@ data.BCR.clusters <- function(pro_data_list,
   return(BCR_clusters_list)
 }
 
-singletons.backtrack <- function(BCR_clusters, pro_data, min_depth_thre, max_depth_thre){
+singletons.backtrack <- function(BCR_clusters, pro_data, min_depth_thre=3, max_depth_thre=1000){
   all_clustered_clonotype_index <- unique(unlist(sapply(BCR_clusters, function(x) x$clonotype_index)))
   pro_data_clonotype_index <- as.numeric(pro_data$clonotype_index)
   all_singleton_clonotype_index <- setdiff(pro_data_clonotype_index, all_clustered_clonotype_index)
@@ -582,7 +593,6 @@ BCR.cluster.unfilter <- function(input,
   }
   else{
     bcr_clusters <- c()
-    min_depth_thre <- min_depth_thre + floor(nrow(input) / 1e+05)
 
     # VJ partition
     VJ <- paste(input$v_call, input$j_call, sep = "_")

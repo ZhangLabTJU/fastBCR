@@ -44,7 +44,6 @@ BCR.clusters.p<- function(input,
   input$junction_aa <- input$junction_aa_heavy
 
   bcr_clusters <- c()
-  min_depth_thre <- min_depth_thre + floor(nrow(input) / 1e+05)
 
   ### 1. Fast k-mer pre-clustering
   ## 1.1 VJ partition
