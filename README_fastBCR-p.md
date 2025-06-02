@@ -104,10 +104,12 @@ Paired_pro_sample_list <- paired.preprocess(Paired_raw_sample_list,
 # Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR sample list
 Paired_cluster_list <- data.BCR.clusters(Paired_pro_sample_list, 
                                         min_depth_thre = 3,
+                                        min_depth_thre_adjustment = TRUE,
                                         max_depth_thre = 1000,
                                         overlap_thre = 0.1,
                                         consensus_thre = 0.8, 
-                                        paired = TRUE)
+                                        paired = TRUE,
+                                        singletons_backtrack = TRUE)
 # Set 'paired = TRUE' to use fastBCR-p to infer clonal families from paired BCR data
 Paired_01_clusters <- BCR.cluster(Paired_pro_sample_list[[1]], 
                                   min_depth_thre = 3,
