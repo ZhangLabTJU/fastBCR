@@ -4,16 +4,16 @@ output: html_notebook
 ---
 
 ```{r setup, include = TRUE}
-# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.3.0.zip and set the folder as working directory before running pipeline.
+# You should download and unzip https://github.com/ZhangLabTJU/fastBCR/archive/refs/tags/v1.3.1.zip and set the folder as working directory before running pipeline.
 # knitr::opts_knit$set(root.dir = "THE/PATH/TO/FASTBCR/FOLDER")
-knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.3.0") # Replace with your path.
+knitr::opts_knit$set(root.dir = "~/Documents/Rpackage/fastBCR-1.3.1") # Replace with your path.
 
 # Install and library fastBCR
 if(!require(devtools)){
   install.packages("devtools") # If not already installed
 }
-devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.3.0")
-library(fastBCR)
+devtools::install_github("ZhangLabTJU/fastBCR", ref = "v1.3.1")
+# library(fastBCR)
 ```
 
 ```{r}
@@ -59,22 +59,30 @@ HC_pro_data_list <- data.preprocess(raw_data_list = HC_raw_data_list,
 ## 3. BCR clonal family inference
 # Fast clonal family inference from preprocessed data.
 # The "min_depth_thre" parameter represents minimal clustering criteria (minimum number of sequences needed to form a cluster) and defaults to 3.
-# For high efficiency, the "min_depth_thre" is increased by 1 for every 100,000 entries of input data.
+# If the "min_depth_thre_adjustment" parameter is 'TRUE', the minimal clustering threshold is increased by 1 for every 100,000 entries of input data for high efficiency.
 # The "max_depth_thre" parameter represents maximum clustering criteria (maxiumu number of sequences allowed within a cluster) and defaults to 1000.
 # The "overlap_thre" parameter represents overlap coefficient threshold for merging two clusters, selectable range (0,1) and defaults to 0.1.
 # Lower "overlap_thre" may lead to overclustering while higher thresholds may lead to the split of clonal families.
 # The "consensus_thre" parameter represents the consensus score threshold for filtering candidates and defaults to 0.8.
 # A higher "consensus_thre" means stricter inference of the cluster.
+# If the "paired" parameter is 'TRUE', using fastBCR-p to infer clonal families from paired BCR sample list.
+# If the "singletons_backtrack" parameter is 'TRUE', backtracking singleton clonotypes that weren't clustered but have multiple sequences in raw data.
 COVID_cluster_list <- data.BCR.clusters(pro_data_list = COVID_pro_data_list,
                                         min_depth_thre = 3,
+                                        min_depth_thre_adjustment = TRUE,
                                         max_depth_thre = 1000,
                                         overlap_thre = 0.1,
-                                        consensus_thre = 0.8)
+                                        consensus_thre = 0.8,
+                                        paired = FALSE,
+                                        singletons_backtrack = TRUE)
 HC_cluster_list <- data.BCR.clusters(pro_data_list = HC_pro_data_list,
                                      min_depth_thre = 3,
+                                     min_depth_thre_adjustment = TRUE,
                                      max_depth_thre = 1000,
                                      overlap_thre = 0.1,
-                                     consensus_thre = 0.8)
+                                     consensus_thre = 0.8,
+                                     paired = FALSE,
+                                     singletons_backtrack = TRUE)
 ```
 
 ```{r}
