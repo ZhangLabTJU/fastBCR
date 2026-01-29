@@ -299,109 +299,103 @@ Light chain columns
 	•	v_call_light
 	•	v_identity_light (used to compute SHM)
 
-⸻
+1. Public Score & SHM Calculation (Cluster-level)
 
-Public Score & SHM Calculation (Cluster-level)
+	Step A. Sequence-level public prediction
+	For each cluster:
+	
+	Heavy chain
+		1.	Rename columns
+	cdr1_heavy, cdr2_heavy, cdr3_heavy, v_call_heavy
+	→ cdr1, cdr2, cdr3, vgene
+		2.	Run prediction:
+	
+	predict_public_antibody(data_heavy, model = "cdrh", python_env = "r-py-env")
+	
+	Light chain
+		1.	Rename columns
+	cdr1_light, cdr2_light, cdr3_light, v_call_light
+	→ cdr1, cdr2, cdr3, vgene
+		2.	Run prediction:
+	
+	predict_public_antibody(data_light, model = "cdrl", python_env = "r-py-env")
+	
+	The returned public_score is appended back to the original cluster data.frame as:
+		•	public_heavy
+		•	public_light
+	
+	Step B. Sequence-level SHM (default)
+	SHM is computed from V identity:
+		•	shm_heavy = 100 - v_identity_heavy
+		•	shm_light = 100 - v_identity_light
+	
+	Step C. Cluster-level means
+	For each cluster, we compute:
+		•	public_heavy_mean, public_light_mean
+		•	shm_heavy_mean, shm_light_mean
 
-Step A. Sequence-level public prediction
-For each cluster:
+2. Downstream Flagging (Final Cluster Labels)
 
-Heavy chain
-	1.	Rename columns
-cdr1_heavy, cdr2_heavy, cdr3_heavy, v_call_heavy
-→ cdr1, cdr2, cdr3, vgene
-	2.	Run prediction:
+	We first compute:
+	```r
+	df <- df %>%
+	  dplyr::mutate(
+	    public_heavy_z = zscore(public_heavy_mean),
+	    public_light_z = zscore(public_light_mean),
+	    public_score_z = (public_heavy_z + public_light_z) / 2,
+	    shm_mean = (shm_heavy_mean + shm_light_mean) / 2
+	  )
+	```
+	Then apply downstream flagging with cutoffs P_cut and SHM_cut:
+	```r
+	cluster_flag <- df %>%
+	  dplyr::mutate(
+	    is_public = public_score_z >= P_cut,
+	    public_origin = dplyr::case_when(
+	      is_public & shm_mean <  SHM_cut ~ "Naive-derived (filtered)",
+	      is_public & shm_mean >= SHM_cut ~ "Memory-derived (kept)",
+	      TRUE                            ~ "Non-public"
+	    )
+	  )
+	```
+	Default parameters:
+		•	P_cut = 0.82
+		•	SHM_cut = 1.02
 
-predict_public_antibody(data_heavy, model = "cdrh", python_env = "r-py-env")
-
-Light chain
-	1.	Rename columns
-cdr1_light, cdr2_light, cdr3_light, v_call_light
-→ cdr1, cdr2, cdr3, vgene
-	2.	Run prediction:
-
-predict_public_antibody(data_light, model = "cdrl", python_env = "r-py-env")
-
-The returned public_score is appended back to the original cluster data.frame as:
-	•	public_heavy
-	•	public_light
-
-Step B. Sequence-level SHM (default)
-SHM is computed from V identity:
-	•	shm_heavy = 100 - v_identity_heavy
-	•	shm_light = 100 - v_identity_light
-
-Step C. Cluster-level means
-For each cluster, we compute:
-	•	public_heavy_mean, public_light_mean
-	•	shm_heavy_mean, shm_light_mean
-
-⸻
-
-Downstream Flagging (Final Cluster Labels)
-
-We first compute:
-```r
-df <- df %>%
-  dplyr::mutate(
-    public_heavy_z = zscore(public_heavy_mean),
-    public_light_z = zscore(public_light_mean),
-    public_score_z = (public_heavy_z + public_light_z) / 2,
-    shm_mean = (shm_heavy_mean + shm_light_mean) / 2
-  )
-```
-Then apply downstream flagging with cutoffs P_cut and SHM_cut:
-```r
-cluster_flag <- df %>%
-  dplyr::mutate(
-    is_public = public_score_z >= P_cut,
-    public_origin = dplyr::case_when(
-      is_public & shm_mean <  SHM_cut ~ "Naive-derived (filtered)",
-      is_public & shm_mean >= SHM_cut ~ "Memory-derived (kept)",
-      TRUE                            ~ "Non-public"
-    )
-  )
-```
-Default parameters:
-	•	P_cut = 0.82
-	•	SHM_cut = 1.02
-
-⸻
-
-Usage Example (Cluster list → Final Flags)
-```r
-library(fastBCR)
-library(reticulate)
-
-# Activate the Python environment in R
-use_condaenv("r-py-env", required = TRUE)
-
-# cluster_list: output from fastBCR clustering (list of data.frame)
-# cluster_list <- fastBCR_cluster_paired(...)
-
-# Run sequence-level public prediction + SHM + cluster means + downstream flagging
-res <- annotate_public_and_flag(
-  cluster_list = cluster_list,
-  python_env = "r-py-env",
-  P_cut = 0.82,
-  SHM_cut = 1.88
-)
-
-# Augmented clusters: each cluster df contains public_heavy/public_light/shm_heavy/shm_light
-cluster_list_aug <- res$cluster_list
-
-# Per-cluster summary table (means + zscores)
-cluster_summary <- res$cluster_summary
-
-# Final downstream annotation for evaluation
-cluster_flag <- res$cluster_flag
-
-head(cluster_flag)
-table(cluster_flag$public_origin)
-```
-Recommended downstream usage
-	•	Use cluster_flag as the final cluster-level label table for evaluation/plots/statistics.
-	•	Use cluster_list_aug for per-sequence inspection or additional modeling.
+3. Usage Example (Cluster list → Final Flags)
+	```r
+	library(fastBCR)
+	library(reticulate)
+	
+	# Activate the Python environment in R
+	use_condaenv("r-py-env", required = TRUE)
+	
+	# cluster_list: output from fastBCR clustering (list of data.frame)
+	# cluster_list <- fastBCR_cluster_paired(...)
+	
+	# Run sequence-level public prediction + SHM + cluster means + downstream flagging
+	res <- annotate_public_and_flag(
+	  cluster_list = cluster_list,
+	  python_env = "r-py-env",
+	  P_cut = 0.82,
+	  SHM_cut = 1.88
+	)
+	
+	# Augmented clusters: each cluster df contains public_heavy/public_light/shm_heavy/shm_light
+	cluster_list_aug <- res$cluster_list
+	
+	# Per-cluster summary table (means + zscores)
+	cluster_summary <- res$cluster_summary
+	
+	# Final downstream annotation for evaluation
+	cluster_flag <- res$cluster_flag
+	
+	head(cluster_flag)
+	table(cluster_flag$public_origin)
+	```
+	Recommended downstream usage
+		•	Use cluster_flag as the final cluster-level label table for evaluation/plots/statistics.
+		•	Use cluster_list_aug for per-sequence inspection or additional modeling.
 
 
 ***Sample Data***
