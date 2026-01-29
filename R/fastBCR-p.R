@@ -386,7 +386,7 @@ annotate_public_and_flag <- function(
   cluster_list,
   python_env = "r-py-env",
   P_cut = 0.82,
-  SHM_cut = 1.88,
+  SHM_cut = 1.02,
   heavy_model = "cdrh",
   light_model = "cdrl"
 ) {
