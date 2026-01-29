@@ -380,7 +380,7 @@ zscore <- function(x) {
 #' @return list(
 #'   cluster_list = augmented cluster_list (adds public_heavy/public_light/shm_heavy/shm_light),
 #'   cluster_summary = data.frame per cluster with means + zscores,
-#'   df_flag = cluster_summary with is_public/public_origin labels
+#'   cluster_flag = cluster_summary with is_public/public_origin labels
 #' )
 annotate_public_and_flag <- function(
   cluster_list,
@@ -458,7 +458,7 @@ annotate_public_and_flag <- function(
     shm_mean = (shm_heavy_mean + shm_light_mean) / 2
   )
 
-  df_flag <- dplyr::mutate(
+  cluster_flag <- dplyr::mutate(
     df,
     is_public = public_score_z >= P_cut,
     public_origin = dplyr::case_when(
@@ -471,6 +471,6 @@ annotate_public_and_flag <- function(
   list(
     cluster_list = cluster_list_aug,
     cluster_summary = df,
-    df_flag = df_flag
+    cluster_flag = cluster_flag
   )
 }
