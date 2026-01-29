@@ -300,3 +300,177 @@ filter_public_antibodies <- function(prediction_results, threshold = 0.5) {
     low_public = low_public
   )
 }
+
+#' zscore helper
+zscore <- function(x) {
+  mu <- mean(x, na.rm = TRUE)
+  s  <- stats::sd(x, na.rm = TRUE)
+  if (is.na(s) || s == 0) return(rep(0, length(x)))
+  (x - mu) / s
+}
+
+#' Convert v_identity to percent if it looks like fraction
+.as_percent_identity <- function(v) {
+  v_num <- suppressWarnings(as.numeric(v))
+  if (all(is.na(v_num))) return(v_num)
+  mx <- suppressWarnings(max(v_num, na.rm = TRUE))
+  # heuristic: if values are in [0,1] treat as fraction
+  if (is.finite(mx) && mx <= 1.5) v_num <- v_num * 100
+  v_num
+}
+
+#' Prepare input for predict_public_antibody (heavy)
+.make_heavy_input <- function(df_cluster) {
+  req <- c("cdr1_heavy","cdr2_heavy","cdr3_heavy","v_call_heavy")
+  miss <- setdiff(req, colnames(df_cluster))
+  if (length(miss) > 0) {
+    stop("Heavy chain columns missing: ", paste(miss, collapse = ", "))
+  }
+  dplyr::transmute(
+    df_cluster,
+    cdr1 = .data$cdr1_heavy,
+    cdr2 = .data$cdr2_heavy,
+    cdr3 = .data$cdr3_heavy,
+    vgene = .data$v_call_heavy
+  )
+}
+
+#' Prepare input for predict_public_antibody (light)
+.make_light_input <- function(df_cluster) {
+  req <- c("cdr1_light","cdr2_light","cdr3_light","v_call_light")
+  miss <- setdiff(req, colnames(df_cluster))
+  if (length(miss) > 0) {
+    stop("Light chain columns missing: ", paste(miss, collapse = ", "))
+  }
+  dplyr::transmute(
+    df_cluster,
+    cdr1 = .data$cdr1_light,
+    cdr2 = .data$cdr2_light,
+    cdr3 = .data$cdr3_light,
+    vgene = .data$v_call_light
+  )
+}
+
+#' Compute per-seq SHM from v_identity
+.add_shm_cols <- function(df_cluster) {
+  if (!("v_identity_heavy" %in% colnames(df_cluster))) {
+    stop("Missing column: v_identity_heavy")
+  }
+  if (!("v_identity_light" %in% colnames(df_cluster))) {
+    stop("Missing column: v_identity_light")
+  }
+  vh <- .as_percent_identity(df_cluster$v_identity_heavy)
+  vl <- .as_percent_identity(df_cluster$v_identity_light)
+  dplyr::mutate(
+    df_cluster,
+    shm_heavy = 100 - vh,
+    shm_light = 100 - vl
+  )
+}
+
+#' Main: annotate clusters with public predictions + SHM means + downstream flags
+#'
+#' @param cluster_list list of data.frame (fastBCR clustering output)
+#' @param python_env conda env name used by predict_public_antibody (default "r-py-env")
+#' @param P_cut z-score cutoff for public_score_z (default 0.82)
+#' @param SHM_cut shm_mean cutoff (default 1.88)
+#' @param heavy_model public model for heavy (default "cdrh")
+#' @param light_model public model for light (default "cdrl")
+#'
+#' @return list(
+#'   cluster_list = augmented cluster_list (adds public_heavy/public_light/shm_heavy/shm_light),
+#'   cluster_summary = data.frame per cluster with means + zscores,
+#'   df_flag = cluster_summary with is_public/public_origin labels
+#' )
+annotate_public_and_flag <- function(
+  cluster_list,
+  python_env = "r-py-env",
+  P_cut = 0.82,
+  SHM_cut = 1.88,
+  heavy_model = "cdrh",
+  light_model = "cdrl"
+) {
+  if (!is.list(cluster_list) || length(cluster_list) == 0) {
+    stop("cluster_list must be a non-empty list of data.frames.")
+  }
+
+  # ensure needed pkgs (keep lightweight; user can attach themselves too)
+  if (!requireNamespace("dplyr", quietly = TRUE)) stop("Please install dplyr.")
+  if (!requireNamespace("purrr", quietly = TRUE)) stop("Please install purrr.")
+  if (!exists("predict_public_antibody", mode = "function")) {
+    stop("predict_public_antibody() not found. Please load fastBCR (or the module providing it).")
+  }
+
+  cluster_ids <- names(cluster_list)
+  if (is.null(cluster_ids) || any(cluster_ids == "")) {
+    cluster_ids <- paste0("cluster_", seq_along(cluster_list))
+  }
+
+  # 1) per cluster: predict public heavy/light + compute shm per seq
+  cluster_list_aug <- purrr::map2(cluster_list, cluster_ids, function(df_cluster, cid) {
+    if (!is.data.frame(df_cluster)) {
+      stop("Each element in cluster_list must be a data.frame. Problem at: ", cid)
+    }
+
+    # SHM columns
+    df_cluster <- .add_shm_cols(df_cluster)
+
+    # heavy public prediction
+    heavy_in <- .make_heavy_input(df_cluster)
+    pred_h <- predict_public_antibody(heavy_in, model = heavy_model, python_env = python_env)
+    if (!("public_score" %in% colnames(pred_h))) {
+      stop("predict_public_antibody heavy output must contain column: public_score")
+    }
+
+    # light public prediction
+    light_in <- .make_light_input(df_cluster)
+    pred_l <- predict_public_antibody(light_in, model = light_model, python_env = python_env)
+    if (!("public_score" %in% colnames(pred_l))) {
+      stop("predict_public_antibody light output must contain column: public_score")
+    }
+
+    # attach to original cluster df (row order assumed consistent)
+    dplyr::mutate(
+      df_cluster,
+      public_heavy = as.numeric(pred_h$public_score),
+      public_light = as.numeric(pred_l$public_score)
+    )
+  })
+
+  # 2) per cluster: summarize means
+  cluster_summary <- purrr::map2_dfr(cluster_list_aug, cluster_ids, function(df_cluster, cid) {
+    dplyr::tibble(
+      cluster_id = cid,
+      n_seq = nrow(df_cluster),
+      public_heavy_mean = mean(df_cluster$public_heavy, na.rm = TRUE),
+      public_light_mean = mean(df_cluster$public_light, na.rm = TRUE),
+      shm_heavy_mean = mean(df_cluster$shm_heavy, na.rm = TRUE),
+      shm_light_mean = mean(df_cluster$shm_light, na.rm = TRUE)
+    )
+  })
+
+  # 3) zscore + downstream flags
+  df <- dplyr::mutate(
+    cluster_summary,
+    public_heavy_z = zscore(public_heavy_mean),
+    public_light_z = zscore(public_light_mean),
+    public_score_z = (public_heavy_z + public_light_z) / 2,
+    shm_mean = (shm_heavy_mean + shm_light_mean) / 2
+  )
+
+  df_flag <- dplyr::mutate(
+    df,
+    is_public = public_score_z >= P_cut,
+    public_origin = dplyr::case_when(
+      is_public & shm_mean <  SHM_cut ~ "Naive-derived (filtered)",
+      is_public & shm_mean >= SHM_cut ~ "Memory-derived (kept)",
+      TRUE                            ~ "Non-public"
+    )
+  )
+
+  list(
+    cluster_list = cluster_list_aug,
+    cluster_summary = df,
+    df_flag = df_flag
+  )
+}
