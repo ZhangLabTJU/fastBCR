@@ -283,6 +283,7 @@ Output:
 ```
 
 ### Cluster-level workflow input (using fastBCR output)
+
 The downstream flagging workflow expects:
 	•	cluster_list: a list where each element is a cluster data.frame produced by fastBCR clustering.
 
@@ -340,7 +341,7 @@ For each cluster, we compute:
 Downstream Flagging (Final Cluster Labels)
 
 We first compute:
-
+```r
 df <- df %>%
   dplyr::mutate(
     public_heavy_z = zscore(public_heavy_mean),
@@ -348,9 +349,9 @@ df <- df %>%
     public_score_z = (public_heavy_z + public_light_z) / 2,
     shm_mean = (shm_heavy_mean + shm_light_mean) / 2
   )
-
+```
 Then apply downstream flagging with cutoffs P_cut and SHM_cut:
-
+```r
 cluster_flag <- df %>%
   dplyr::mutate(
     is_public = public_score_z >= P_cut,
@@ -360,7 +361,7 @@ cluster_flag <- df %>%
       TRUE                            ~ "Non-public"
     )
   )
-
+```
 Default parameters:
 	•	P_cut = 0.82
 	•	SHM_cut = 1.02
@@ -368,7 +369,7 @@ Default parameters:
 ⸻
 
 Usage Example (Cluster list → Final Flags)
-
+```r
 library(fastBCR)
 library(reticulate)
 
@@ -397,7 +398,7 @@ cluster_flag <- res$cluster_flag
 
 head(cluster_flag)
 table(cluster_flag$public_origin)
-
+```
 Recommended downstream usage
 	•	Use cluster_flag as the final cluster-level label table for evaluation/plots/statistics.
 	•	Use cluster_list_aug for per-sequence inspection or additional modeling.
