@@ -80,14 +80,14 @@ library(reticulate)
 # conda activate r-py-env
 # ```
 
-## 2.3. Install bcr_v_bert and pubbcrpredictor manually according to the README.md
+## 2.3. Install bcr_v_bert and PubBCRp manually according to the README.md
 
 ## 2.4.	Load the fastBCR library and sample data:
 # Load sample data (provided in the 'example_paired' folder)
 data_heavy <- read.csv("example/example_public/public_heavy_antibody.csv")
 data_light <- read.csv("example/example_public/public_light_antibody.csv")
 
-## 2.5 Load reticulate for R-Python integration and activate the Python environment with BCR_V_BERT and PubBCRPredictor packages
+## 2.5 Load reticulate for R-Python integration and activate the Python environment with BCR_V_BERT and PubBCRp packages
 # Activate the Python environment in R, and "r-py-env" need to be changed to your Python environment.
 use_condaenv("r-py-env", required = TRUE)
 
