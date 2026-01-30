@@ -128,7 +128,7 @@ The public antibody prediction module in **fastBCR-p** leverages the pre-trained
 fastBCR-p provides a **downstream flagging step** that annotates each **cluster** with a label ("Naive-derived (filtered)", "Memory-derived (kept)", "Non-public")based on **publicness z-score** and **SHM level**, enabling direct downstream evaluation, reporting, and visualization.
 
 #### Python Dependency
-The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRPredictor** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
+The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRp** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRPredictor).
 
 ***Installation***
 
@@ -144,8 +144,8 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   conda activate r-py-env
   ```
   
-  3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRPredictor](https://github.com/ZhangLabTJU/PubBCRPredictor).
-  4. Install bcr_v_bert and pubbcrpredictor manually
+  3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRPredictor).
+  4. Install bcr_v_bert and PubBCRp manually
 
       Setup BCR_V_BERT package manualy
       ```bash
@@ -155,11 +155,11 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
         python setup.py install
       ```
 
-      Setup PubBCRPredictor package manualy
+      Setup PubBCRp package manualy
       ```bash
         cd ..
-        unzip PubBCRPredictor.zip
-        cd PubBCRPredictor
+        unzip PubBCRp.zip
+        cd PubBCRp
         pip install -r requirements.txt
         python setup.py install
       ```
@@ -212,7 +212,7 @@ library(fastBCR)
 data_heavy <- read.csv("example/example_public/public_heavy_antibody.csv")
 data_light <- read.csv("example/example_public/public_light_antibody.csv")
 ```
-2. Load reticulate for R-Python integration and activate the Python environment with BCR_V_BERT and PubBCRPredictor packages
+2. Load reticulate for R-Python integration and activate the Python environment with BCR_V_BERT and PubBCRp packages
 ```r
 library(reticulate)
 # Activate the Python environment in R
@@ -360,7 +360,7 @@ Light chain columns
 	```
 	Default parameters:
 		•	P_cut = 0.82
-		•	SHM_cut = 1.02
+		•	SHM_cut = 1.88
 
 3. Usage Example (Cluster list → Final Flags)
 	```r
@@ -408,7 +408,7 @@ For detailed information about the BCR-V-BERT Python package and its capabilitie
 
 If you experience any issues please add an issue to the [fastBCR Issues](https://github.com/ZhangLabTJU/fastBCR/issues).
 
-1. If you encounter the following issues during the installation of BCR_V_BERT and PubBCRPredictor packages:
+1. If you encounter the following issues during the installation of BCR_V_BERT and PubBCRp packages:
     ```bash
     ERROR: pip’s dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
     xxx_b requires xxx_a>=x.xx, which is not installed.
@@ -430,7 +430,7 @@ If you experience any issues please add an issue to the [fastBCR Issues](https:/
     Error in py_run_string_impl(code, local, convert) : 
       FileNotFoundError: [Errno 2] No such file or directory: '/Users/XXX/anaconda3/envs/r-py-env/lib/python3.9/site-packages/BCR_V_BERT-1.0.0-py3.9.egg/BCR_V_BERT/model_pretrained/cdrl3/v_vocab.npy'
 
-    # e.g. The BCR_V_BERT and PubBCRPredictor packages are not installed successfully:
+    # e.g. The BCR_V_BERT and PubBCRp packages are not installed successfully:
     > heavy_chain_results <- predict_public_antibody(data, model = "cdrh", python_env = "r-py-env")
     Error in py_run_string_impl(code, local,convert)
        NameError: name 'data' is not defined
