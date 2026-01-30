@@ -128,7 +128,7 @@ The public antibody prediction module in **fastBCR-p** leverages the pre-trained
 fastBCR-p provides a **downstream flagging step** that annotates each **cluster** with a label ("Naive-derived (filtered)", "Memory-derived (kept)", "Non-public")based on **publicness z-score** and **SHM level**, enabling direct downstream evaluation, reporting, and visualization.
 
 #### Python Dependency
-The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRp** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRPredictor).
+The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCRp** Python package. Before running predictions, you need to install the required Python environment and dependencies as described in the [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRp).
 
 ***Installation***
 
@@ -144,7 +144,7 @@ The public antibody prediction module depends on the **BCR-V-BERT** and **PubBCR
   conda activate r-py-env
   ```
   
-  3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRPredictor).
+  3. CLone repositories or download ZIP files from  [BCR-V-BERT](https://github.com/ZhangLabTJU/BCR-V-BERT) and [PubBCRp](https://github.com/ZhangLabTJU/PubBCRp).
   4. Install bcr_v_bert and PubBCRp manually
 
       Setup BCR_V_BERT package manualy
