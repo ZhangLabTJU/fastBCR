@@ -226,7 +226,7 @@ predict_public_antibody <- function(data, model = "cdrh", python_env = "public")
 import os
 import pandas as pd
 import torch
-from PubBCRPredictor import PubBCRPredictor_Runner, MLP
+from PubBCRp import PubBCRp_Runner, MLP
 from BCR_V_BERT import BCR_V_BERT_Runner
 
 def vgene_process(vgene):
@@ -249,22 +249,22 @@ cdr3s = data['cdr3'].values
 model_name = model
 if model == 'cdrh':
     bcr_v_bert = BCR_V_BERT_Runner(model='cdrh')
-    pub_runner = PubBCRPredictor_Runner(model='cdrh')
+    pub_runner = PubBCRp_Runner(model='cdrh')
     feature = bcr_v_bert.embed(sequence,vgenes)
 
 elif model == 'cdrl':
     bcr_v_bert = BCR_V_BERT_Runner(model='cdrl')
-    pub_runner = PubBCRPredictor_Runner(model='cdrl')
+    pub_runner = PubBCRp_Runner(model='cdrl')
     feature = bcr_v_bert.embed(sequence,vgenes)
 
 elif model == 'cdrh3':
     bcr_v_bert = BCR_V_BERT_Runner(model='cdrh3')
-    pub_runner = PubBCRPredictor_Runner(model='cdrh3')
+    pub_runner = PubBCRp_Runner(model='cdrh3')
     feature = bcr_v_bert.embed(cdr3s, vgenes)
 
 elif model == 'cdrl3':
     bcr_v_bert = BCR_V_BERT_Runner(model='cdrl3')
-    pub_runner = PubBCRPredictor_Runner(model='cdrl3')
+    pub_runner = PubBCRp_Runner(model='cdrl3')
     feature = bcr_v_bert.embed(cdr3s, vgenes)
 
 prob = pub_runner.predict(feature)
